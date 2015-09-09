@@ -109,8 +109,20 @@ cosbeta = xz/c
 cosgamma = xy/b
 # print xlo, xhi, ylo, yhi,zlo, zhi, xy, xz, yz
 # print a, b, c, cosalpha, cosbeta, cosgamma
-#identifying the total number of atoms as N
+file.close
+#identifying the total number of atoms as N and write corresponding poscar
 file = open(sys.argv[1],'r')
+output = open('POSCAR', 'w')
+header = """C  H  O  Pt                             
+   8.41590000000000     
+     1.0000000000000000    0.0000000000000000    0.0000000000000000
+     0.5000000095058164    0.8660253995413444    0.0000000000000000
+     0.0000000000000000    0.0000000000000000    4.5775489799070801
+   Pt   C    O    H 
+    27     3     27     55
+Selective dynamics
+Direct"""
+output.writelines((header,'\n'))
 for line in file:
     if not line: continue
     if flag == 1:
@@ -118,10 +130,19 @@ for line in file:
         print('\n----------------------------------------------------')
         print('Found Total Number of atoms: %d' % N)
         print('     ID            ID             Dist            Angle')
+        flag = 0
+    elif flag == -1:
+        words = string.split(line)
+        # print words
+        grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
+        output.writelines(grab)
+        # output.close()
     if line.startswith('ITEM: NUMBER'):
        flag = 1
-    else: flag = -1
-
+    elif line.startswith('ITEM: ATOMS'):
+       flag = -1
+file.close
+output.close
 # ########################################################################################################################################################
 #reading in coordinates plus atom types
 h1 = find (rHS)
