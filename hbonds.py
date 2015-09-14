@@ -3,11 +3,8 @@ import string,sys
 import math
 # from decimal import Decimal
 # from array import *
-
-
 temp = output = xp = xn = yp = yn = []
-h1 = h2 = o1 = o2  = [None] * 10000
-
+h1 = h2 = o1 = o2 = link = [None] * 10000
 A  = 0
 flag = nlines = 0
 count = 0
@@ -75,10 +72,12 @@ rOS = ['4','5']
 rHW = ['7']
 rOW = ['6']
 
-
 file = open(sys.argv[1],'r')
-for i in range(5):
-    file.readline() # skip first 5 lines
+for i in range(3):
+    file.readline() # skip first 3 lines
+line = file.readline()
+N = int(line)
+file.readline() # skip the next line
 line = file.readline()
 words = string.split(line)
 xlo_bound = float(words[0])
@@ -110,21 +109,34 @@ cosgamma = xy/b
 # print xlo, xhi, ylo, yhi,zlo, zhi, xy, xz, yz
 # print a, b, c, cosalpha, cosbeta, cosgamma
 file.close
+# ########################################################################################################################################################
+h1 = find (rHS)
+h2 = find (rHW)
+o1 = find (rOS)
+o2 = find (rOW)
+
+
+h1 = [x for x in h1 if x != None]
+h2 = [x for x in h2 if x != None]
+o1 = [x for x in o1 if x != None]
+o2 = [x for x in o2 if x != None]
 
 #identifying the total number of atoms as N and write corresponding poscar
 file = open(sys.argv[1],'r')
 output1 = open('POSCAR', 'w')
+output2 = open('POSCAR_expbg', 'w')
+
 header1 = """C  H  O  Pt                             
    8.41590000000000     
      1.0000000000000000    0.0000000000000000    0.0000000000000000
      0.5000000095058164    0.8660253995413444    0.0000000000000000
      0.0000000000000000    0.0000000000000000    4.5775489799070801
    Pt   C    O    H 
-    27     3     27     56
+    27     3     27     NH
 Selective dynamics
 Direct"""
-output1.writelines((header1,'\n'))
-output2 = open('POSCAR_expbg', 'w')
+output1.writelines((header1.replace("NH" , str(N-27-3-27)),'\n'))
+
 header2 = """C  H  O  Pt                             
    8.41590000000000     
      1.0000000000000000    0.0000000000000000    0.0000000000000000
@@ -135,10 +147,10 @@ header2 = """C  H  O  Pt
 Selective dynamics
 Direct"""
 output2.writelines((header2,'\n'))
+
 for line in file:
     if not line: continue
     if flag == 1:
-        N = int(line)
         print('\n----------------------------------------------------')
         print('Found Total Number of atoms: %d' % N)
         print('     ID            ID             Dist            Angle')
@@ -152,7 +164,7 @@ for line in file:
         # print nlines
         # if nlines <= int(a[0]) or nlines >= int(a[0]) + int(a[1]):
         ###############################################################################
-        if nlines <= 27 or (nlines >= 34 and nlines <= N-8) :#########################
+        if nlines <= 27 or (nlines >= 34 and nlines <= N-(N-27-3-27-48)) :#########################
         ###############################################################################
             words = string.split(line)
             # print nlines
@@ -163,24 +175,12 @@ for line in file:
        flag = 1
     elif line.startswith('ITEM: ATOMS'):
        flag = -1
+#reading in coordinates plus atom types
+
+   
 file.close
 output1.close
-
-file.close
 output2.close
-# ########################################################################################################################################################
-#reading in coordinates plus atom types
-h1 = find (rHS)
-h2 = find (rHW)
-o1 = find (rOS)
-o2 = find (rOW)
-
-
-h1 = [x for x in h1 if x != None]
-h2 = [x for x in h2 if x != None]
-o1 = [x for x in o1 if x != None]
-o2 = [x for x in o2 if x != None]
-
 
 # ########################################################################################################################################################
 for i in range(len(o1)):
@@ -191,10 +191,10 @@ for i in range(len(o1)):
                 # print o2[j][4],h2[l][4],dist(o2[j],h2[l])
                 do1o2 = dist(o1[i] , o2[j])
                 do1h2 = dist(o1[i] , h2[l])
-
                 A = ang( do2h2 , do1o2 , do1h2)
 
                 if  do1o2 <= float(12.25) and A <= 30:
+                    link.append(o2[j])
                     temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8) , round(A,8)))
     for i in range(len(o1)):
         for j in range(len(o2)):
@@ -208,10 +208,14 @@ for i in range(len(o1)):
                     A = ang( do1h1 , do1o2 , do2h1)
 
                     if  do1o2 <= float(12.25) and A <= 30:
+                        link.append(o2[j])
                         temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8) , round(A,8)))
 temp=list(set(temp))
 temp=sorted(temp)
-
+temp = [x for x in temp if x != None]
+link=list((set(link)))
+link=sorted(link)
+link = [x for x in link if x != None]
 for i in range(len(temp)):
     if i>0 and temp[i][1]==temp[i-1][1] and temp[i][3]<temp[i-1][3]:
         print '    ', temp[i][0],'         ',temp[i][1],'     ',temp[i][2], '     ',temp[i][3],'       '
@@ -222,3 +226,80 @@ for i in range(len(temp)):
 
 print '----------------------------------------------------'
 print 'Total hydrogen bond(s) btw water and the adsorbate:   %d\n' % count
+temp = []
+output3 = open('POSCAR_impbg', 'w')
+header3 = """C  H  O  Pt                             
+   8.41590000000000     
+     1.0000000000000000    0.0000000000000000    0.0000000000000000
+     0.5000000095058164    0.8660253995413444    0.0000000000000000
+     0.0000000000000000    0.0000000000000000    4.5775489799070801
+   Pt     O    H 
+    27    NO    NH
+Selective dynamics
+Direct
+0.805555    0.0555554    0.21623     F    F    F
+0.805555    0.722222    0.21623     F    F    F
+0.805555    0.388889    0.21623     F    F    F
+0.138889    0.0555554    0.21623     F    F    F
+0.138889    0.722222    0.21623     F    F    F
+0.138889    0.388889    0.21623     F    F    F
+0.472222    0.0555554    0.21623     F    F    F
+0.472222    0.722222    0.21623     F    F    F
+0.472222    0.388889    0.21623     F    F    F
+0.916666    0.833334    0.275687     F    F    F
+0.916666    0.5    0.275687     F    F    F
+0.916666    0.166666    0.275687     F    F    F
+0.25    0.833334    0.275687     F    F    F
+0.25    0.5    0.275687     F    F    F
+0.25    0.166666    0.275687     F    F    F
+0.583333    0.833334    0.275687     F    F    F
+0.583333    0.5    0.275687     F    F    F
+0.583333    0.166666    0.275687     F    F    F
+0.0277775    0.944445    0.335143     F    F    F
+0.0277774    0.611111    0.335143     F    F    F
+0.0277775    0.277778    0.335143     F    F    F
+0.361111    0.944445    0.335143     F    F    F
+0.361111    0.611111    0.335143     F    F    F
+0.361111    0.277778    0.335143     F    F    F
+0.694444    0.944445    0.335143     F    F    F
+0.694444    0.611111    0.335143     F    F    F
+0.694444    0.277778    0.335143     F    F    F"""
+output3.writelines((header3.replace("NO" ,str(count)).replace("NH" , str(2*count)),'\n'))
+for i in range(len(link)):
+     if 0 <= float(link[i][1]) <= 1  and 0 <= float(link[i][2]) <= 1:
+        grab = ((link[i][1],'    ' , link[i][2] ,'    ' , link[i][3], '     F    F    F', '\n'))
+        output3.writelines(grab)
+        for j in range(len(h2)):
+            do2h2 = nsth(link[i],h2[j])
+            if do2h2 <= 1.2:
+                temp.append(h2[j])
+for i in range(len(temp)):
+    grab = ((temp[i][1],'    ' , temp[i][2] ,'    ' , temp[i][3], '     F    F    F', '\n'))
+    output3.writelines(grab)
+
+# file = open(sys.argv[1],'r')  
+# for line in file:
+#     if not line: continue
+#     elif flag == -1:
+#         words = string.split(line)
+#         # print words
+#         grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
+#         output1.writelines(grab)
+#         nlines += 1
+#         # print nlines
+#         # if nlines <= int(a[0]) or nlines >= int(a[0]) + int(a[1]):
+#         ###############################################################################
+#         if nlines <= 27 or (nlines >= 34 and nlines <= N-(N-27-3-27-48)) :#########################
+#         ###############################################################################
+#             words = string.split(line)
+#             # print nlines
+#             grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
+#             output2.writelines(grab)
+#         # output.close()
+#     if line.startswith('ITEM: NUMBER'):
+#        flag = 1
+#     elif line.startswith('ITEM: ATOMS'):
+#        flag = -1
+# #reading in coordinates plus atom types
+# file.close
+output3.close
