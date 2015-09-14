@@ -3,7 +3,7 @@ import string,sys
 import math
 # from decimal import Decimal
 # from array import *
-temp = output = xp = xn = yp = yn = []
+temp  = output = xp = xn = yp = yn = []
 h1 = h2 = o1 = o2 = link = [None] * 10000
 A  = 0
 flag = nlines = 0
@@ -166,9 +166,7 @@ for line in file:
         ###############################################################################
         if nlines <= 27 or (nlines >= 34 and nlines <= N-(N-27-3-27-48)) :#########################
         ###############################################################################
-            words = string.split(line)
             # print nlines
-            grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
             output2.writelines(grab)
         # output.close()
     if line.startswith('ITEM: NUMBER'):
@@ -227,44 +225,33 @@ for i in range(len(temp)):
 print '----------------------------------------------------'
 print 'Total hydrogen bond(s) btw water and the adsorbate:   %d\n' % count
 temp = []
-output3 = open('POSCAR_impbg', 'w')
+flag = nlines = 0
+output3 = open('POSCAR_imp', 'w')
 header3 = """C  H  O  Pt                             
    8.41590000000000     
      1.0000000000000000    0.0000000000000000    0.0000000000000000
      0.5000000095058164    0.8660253995413444    0.0000000000000000
      0.0000000000000000    0.0000000000000000    4.5775489799070801
-   Pt     O    H 
-    27    NO    NH
+   Pt   C    O    H 
+    27   3    NO    NH
 Selective dynamics
-Direct
-0.805555    0.0555554    0.21623     F    F    F
-0.805555    0.722222    0.21623     F    F    F
-0.805555    0.388889    0.21623     F    F    F
-0.138889    0.0555554    0.21623     F    F    F
-0.138889    0.722222    0.21623     F    F    F
-0.138889    0.388889    0.21623     F    F    F
-0.472222    0.0555554    0.21623     F    F    F
-0.472222    0.722222    0.21623     F    F    F
-0.472222    0.388889    0.21623     F    F    F
-0.916666    0.833334    0.275687     F    F    F
-0.916666    0.5    0.275687     F    F    F
-0.916666    0.166666    0.275687     F    F    F
-0.25    0.833334    0.275687     F    F    F
-0.25    0.5    0.275687     F    F    F
-0.25    0.166666    0.275687     F    F    F
-0.583333    0.833334    0.275687     F    F    F
-0.583333    0.5    0.275687     F    F    F
-0.583333    0.166666    0.275687     F    F    F
-0.0277775    0.944445    0.335143     F    F    F
-0.0277774    0.611111    0.335143     F    F    F
-0.0277775    0.277778    0.335143     F    F    F
-0.361111    0.944445    0.335143     F    F    F
-0.361111    0.611111    0.335143     F    F    F
-0.361111    0.277778    0.335143     F    F    F
-0.694444    0.944445    0.335143     F    F    F
-0.694444    0.611111    0.335143     F    F    F
-0.694444    0.277778    0.335143     F    F    F"""
-output3.writelines((header3.replace("NO" ,str(count)).replace("NH" , str(2*count)),'\n'))
+Direct"""
+output3.writelines((header3.replace("NO" ,str(count+3)).replace("NH" , str(2*count+N-27-3-27-48)),'\n'))
+
+file = open(sys.argv[1],'r')  
+for line in file:
+    if not line: continue
+    if flag == -1:
+        words = string.split(line)
+        grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
+        nlines += 1
+        if nlines <= 27+6 :
+            output3.writelines(grab)
+        elif nlines > (N-(N-27-3-27-48)):
+            temp.append((words[1],words[2],words[3],words[4]))
+    if line.startswith('ITEM: ATOMS'):
+       flag = -1
+file.close
 for i in range(len(link)):
      if 0 <= float(link[i][1]) <= 1  and 0 <= float(link[i][2]) <= 1:
         grab = ((link[i][1],'    ' , link[i][2] ,'    ' , link[i][3], '     F    F    F', '\n'))
@@ -276,30 +263,42 @@ for i in range(len(link)):
 for i in range(len(temp)):
     grab = ((temp[i][1],'    ' , temp[i][2] ,'    ' , temp[i][3], '     F    F    F', '\n'))
     output3.writelines(grab)
-
-# file = open(sys.argv[1],'r')  
-# for line in file:
-#     if not line: continue
-#     elif flag == -1:
-#         words = string.split(line)
-#         # print words
-#         grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
-#         output1.writelines(grab)
-#         nlines += 1
-#         # print nlines
-#         # if nlines <= int(a[0]) or nlines >= int(a[0]) + int(a[1]):
-#         ###############################################################################
-#         if nlines <= 27 or (nlines >= 34 and nlines <= N-(N-27-3-27-48)) :#########################
-#         ###############################################################################
-#             words = string.split(line)
-#             # print nlines
-#             grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
-#             output2.writelines(grab)
-#         # output.close()
-#     if line.startswith('ITEM: NUMBER'):
-#        flag = 1
-#     elif line.startswith('ITEM: ATOMS'):
-#        flag = -1
-# #reading in coordinates plus atom types
-# file.close
 output3.close
+
+temp = []
+flag = nlines = 0
+output4 = open('POSCAR_impbg', 'w')
+header4 = """C  H  O  Pt                             
+   8.41590000000000     
+     1.0000000000000000    0.0000000000000000    0.0000000000000000
+     0.5000000095058164    0.8660253995413444    0.0000000000000000
+     0.0000000000000000    0.0000000000000000    4.5775489799070801
+   Pt     O    H 
+    27    NO    NH
+Selective dynamics
+Direct"""
+output4.writelines((header4.replace("NO" ,str(count)).replace("NH" , str(2*count)),'\n'))
+file = open(sys.argv[1],'r')  
+for line in file:
+    if not line: continue
+    if flag == -1:
+        words = string.split(line)
+        grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
+        nlines += 1
+        if nlines <= 27 :
+            output4.writelines(grab)
+    if line.startswith('ITEM: ATOMS'):
+       flag = -1
+file.close
+for i in range(len(link)):
+     if 0 <= float(link[i][1]) <= 1  and 0 <= float(link[i][2]) <= 1:
+        grab = ((link[i][1],'    ' , link[i][2] ,'    ' , link[i][3], '     F    F    F', '\n'))
+        output4.writelines(grab)
+        for j in range(len(h2)):
+            do2h2 = nsth(link[i],h2[j])
+            if do2h2 <= 1.2:
+                temp.append(h2[j])
+for i in range(len(temp)):
+    grab = ((temp[i][1],'    ' , temp[i][2] ,'    ' , temp[i][3], '     F    F    F', '\n'))
+    output4.writelines(grab)
+output4.close
