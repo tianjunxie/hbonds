@@ -9,7 +9,7 @@ temp = output = xp = xn = yp = yn = []
 h1 = h2 = o1 = o2  = [None] * 10000
 
 A  = 0
-flag = 0
+flag = nlines = 0
 count = 0
 
 def dist(X,Y):
@@ -110,19 +110,31 @@ cosgamma = xy/b
 # print xlo, xhi, ylo, yhi,zlo, zhi, xy, xz, yz
 # print a, b, c, cosalpha, cosbeta, cosgamma
 file.close
+
 #identifying the total number of atoms as N and write corresponding poscar
 file = open(sys.argv[1],'r')
-output = open('POSCAR', 'w')
-header = """C  H  O  Pt                             
+output1 = open('POSCAR', 'w')
+header1 = """C  H  O  Pt                             
    8.41590000000000     
      1.0000000000000000    0.0000000000000000    0.0000000000000000
      0.5000000095058164    0.8660253995413444    0.0000000000000000
      0.0000000000000000    0.0000000000000000    4.5775489799070801
    Pt   C    O    H 
-    27     3     27     55
+    27     3     27     56
 Selective dynamics
 Direct"""
-output.writelines((header,'\n'))
+output1.writelines((header1,'\n'))
+output2 = open('POSCAR_expbg', 'w')
+header2 = """C  H  O  Pt                             
+   8.41590000000000     
+     1.0000000000000000    0.0000000000000000    0.0000000000000000
+     0.5000000095058164    0.8660253995413444    0.0000000000000000
+     0.0000000000000000    0.0000000000000000    4.5775489799070801
+   Pt     O    H 
+    27     24     48
+Selective dynamics
+Direct"""
+output2.writelines((header2,'\n'))
 for line in file:
     if not line: continue
     if flag == 1:
@@ -135,14 +147,27 @@ for line in file:
         words = string.split(line)
         # print words
         grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
-        output.writelines(grab)
+        output1.writelines(grab)
+        nlines += 1
+        # print nlines
+        # if nlines <= int(a[0]) or nlines >= int(a[0]) + int(a[1]):
+        ###############################################################################
+        if nlines <= 27 or (nlines >= 34 and nlines <= N-8) :#########################
+        ###############################################################################
+            words = string.split(line)
+            # print nlines
+            grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
+            output2.writelines(grab)
         # output.close()
     if line.startswith('ITEM: NUMBER'):
        flag = 1
     elif line.startswith('ITEM: ATOMS'):
        flag = -1
 file.close
-output.close
+output1.close
+
+file.close
+output2.close
 # ########################################################################################################################################################
 #reading in coordinates plus atom types
 h1 = find (rHS)
@@ -189,7 +214,7 @@ temp=sorted(temp)
 
 for i in range(len(temp)):
     if i>0 and temp[i][1]==temp[i-1][1] and temp[i][3]<temp[i-1][3]:
-        print '    ',temp[i][0],'         ',temp[i][1],'     ',temp[i][2], '     ',temp[i][3],'       '
+        print '    ', temp[i][0],'         ',temp[i][1],'     ',temp[i][2], '     ',temp[i][3],'       '
         count=count+1
     elif i==0 or temp[i][1]!=temp[i-1][1]:
         print '    ',temp[i][0],'         ',temp[i][1],'     ',temp[i][2], '     ',temp[i][3],'       '
