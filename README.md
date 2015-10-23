@@ -4,12 +4,17 @@ want to develop the code also capable of
 generating POSCAR with both explicit water solvation
 and implicit water solvation. 
 
+10/22 Update: Reconfigured outputting algorithm, now can export with POSCARS
+              partial fixed flags on for NEB-dimer/geometry optimization
+              or,
+              simply all fixed coordinates for single point energy calc.
+
 NOTE: for **************   EXPORTING   ************* POSCAR files
 *****************************IMPORTANT***********************************
 
 For now the code can EXPORT C3HxO3 related POSCARS.
    i.e. No correct number of C or O atoms will show up
-        in the POSCAR files if the system is not for C3HxO3.
+        in the POSCAR files IF the system is not for C3HxO3.
 
 NOTE: for **************   COUNTING   ************* lammps frames
  Turned off manual atom type input for speed
@@ -22,6 +27,4 @@ NOTE: for **************   COUNTING   ************* lammps frames
 **********************************rOW = ['6']    ************************
 
 Future improvement,
-1. add a switch for PBC
-2. add C O variation capabablity(outputting POSCAR)
-3. for (1, 2), needed to improve the neighbor list
+1. Update neighbor list to fasten hbonding counting

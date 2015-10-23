@@ -3,7 +3,7 @@ import string,sys
 import math
 # from decimal import Decimal
 # from array import *
-temp  = output = xp = xn = yp = yn = []
+temp = lw = la = output = xp = xn = yp = yn = []
 h1 = h2 = o1 = o2 = link = [None] * 10000
 A  = 0
 flag = nlines = 0
@@ -67,10 +67,16 @@ def find(y):
 # rHW = ['5']
 # rOW = ['4']
 
-rHS = ['8','9']
-rOS = ['4','5']
-rHW = ['7']
-rOW = ['6']
+# rHS = ['8','9']
+# rOS = ['4','5']
+# rHW = ['7']
+# rOW = ['6']
+
+rHS = ['9','10']
+rOS = ['5','6']
+rHW = ['8']
+rOW = ['7']
+fixedposcar = 1
 
 file = open(sys.argv[1],'r')
 for i in range(3):
@@ -115,72 +121,43 @@ h2 = find (rHW)
 o1 = find (rOS)
 o2 = find (rOW)
 
-
 h1 = [x for x in h1 if x != None]
 h2 = [x for x in h2 if x != None]
 o1 = [x for x in o1 if x != None]
 o2 = [x for x in o2 if x != None]
 
-#identifying the total number of atoms as N and write corresponding poscar
-file = open(sys.argv[1],'r')
-output1 = open('POSCAR', 'w')
-output2 = open('POSCAR_expbg', 'w')
+for i in range(len(h1)):
+    for j in range(len(o1)):
+        d = nsth(h1[i],o1[j])
+        if d <= 1.2:
+            temp.append((o1[j][4],h1[i][4]))
+temp=list(set(temp))
+la=sorted(temp)
+temp = []
+for i in range(len(h2)):
+    for j in range(len(o2)):
+        d = nsth(h2[i],o2[j])
+        if d <= 1.2:
+            temp.append((o2[j][4],h2[i][4]))
+temp=list(set(temp))
+lw=sorted(temp)
+# for i in range(len(lw)):
+#     print lw[i]
 
-header1 = """C  H  O  Pt                             
-   8.41590000000000     
-     1.0000000000000000    0.0000000000000000    0.0000000000000000
-     0.5000000095058164    0.8660253995413444    0.0000000000000000
-     0.0000000000000000    0.0000000000000000    4.5775489799070801
-   Pt   C    O    H 
-    27     3     27     NH
-Selective dynamics
-Direct"""
-output1.writelines((header1.replace("NH" , str(N-27-3-27)),'\n'))
+#########################################################################################################################################################
+print('\nFound Total Number of atoms: %d' % N)
+print '----------------------------------------------------'
+if fixedposcar == 1:
+    print('Will export all fixed POSCAR coordinates for single point calculation')
+else:
+    print('Will export partial relaxed POSCAR coordinates for VASP')
+print 'To change, fixedposcar = 1    will give    all fixed flags '
+print '           fixedposcar = 0    will give partil fixed flags '
+print '----------------------------------------------------'
+print('     ID            ID             Dist            Angle')
+print '----------------------------------------------------'
 
-header2 = """C  H  O  Pt                             
-   8.41590000000000     
-     1.0000000000000000    0.0000000000000000    0.0000000000000000
-     0.5000000095058164    0.8660253995413444    0.0000000000000000
-     0.0000000000000000    0.0000000000000000    4.5775489799070801
-   Pt     O    H 
-    27     24     48
-Selective dynamics
-Direct"""
-output2.writelines((header2,'\n'))
-
-for line in file:
-    if not line: continue
-    if flag == 1:
-        print('\n----------------------------------------------------')
-        print('Found Total Number of atoms: %d' % N)
-        print('     ID            ID             Dist            Angle')
-        flag = 0
-    elif flag == -1:
-        words = string.split(line)
-        # print words
-        grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
-        output1.writelines(grab)
-        nlines += 1
-        # print nlines
-        # if nlines <= int(a[0]) or nlines >= int(a[0]) + int(a[1]):
-        ###############################################################################
-        if nlines <= 27 or (nlines >= 34 and nlines <= N-(N-27-3-27-48)) :#########################
-        ###############################################################################
-            # print nlines
-            output2.writelines(grab)
-        # output.close()
-    if line.startswith('ITEM: NUMBER'):
-       flag = 1
-    elif line.startswith('ITEM: ATOMS'):
-       flag = -1
-#reading in coordinates plus atom types
-
-   
-file.close
-output1.close
-output2.close
-
-# ########################################################################################################################################################
+temp = []
 for i in range(len(o1)):
     for j in range(len(o2)):
         for l in range(len(h2)):
@@ -192,7 +169,7 @@ for i in range(len(o1)):
                 A = ang( do2h2 , do1o2 , do1h2)
 
                 if  do1o2 <= float(12.25) and A <= 30:
-                    link.append(o2[j])
+                    link.append(o2[j][4])
                     temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8) , round(A,8)))
     for i in range(len(o1)):
         for j in range(len(o2)):
@@ -206,7 +183,7 @@ for i in range(len(o1)):
                     A = ang( do1h1 , do1o2 , do2h1)
 
                     if  do1o2 <= float(12.25) and A <= 30:
-                        link.append(o2[j])
+                        link.append(o2[j][4])
                         temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8) , round(A,8)))
 temp=list(set(temp))
 temp=sorted(temp)
@@ -222,12 +199,45 @@ for i in range(len(temp)):
         print '    ',temp[i][0],'         ',temp[i][1],'     ',temp[i][2], '     ',temp[i][3],'       '
         count=count+1
 
-print '----------------------------------------------------'
+
 print 'Total hydrogen bond(s) btw water and the adsorbate:   %d\n' % count
+
 temp = []
-flag = nlines = 0
+for i in range(len(lw)):
+    for j in range(len(link)):
+        if lw[i][0] == link[j]:
+            temp.append(lw[i][0])
+            temp.append(lw[i][1])
+temp=list(set(temp))
+
+# identifying the total number of atoms as N and write corresponding poscar
+file = open(sys.argv[1],'r')
+output1 = open('POSCAR', 'w')
+header1 = """Pt   C   O   H                             
+   8.41590000000000     
+     1.0000000000000000    0.0000000000000000    0.0000000000000000
+     0.5000000095058164    0.8660253995413444    0.0000000000000000
+     0.0000000000000000    0.0000000000000000    4.5775489799070801
+   Pt   C    O    H 
+    27     3     27     NH
+Selective dynamics
+Direct"""
+output1.writelines((header1.replace("NH" , str(N-27-3-27)),'\n'))
+
+output2 = open('POSCAR_expbg', 'w')
+header2 = """Pt   C   O   H                             
+   8.41590000000000     
+     1.0000000000000000    0.0000000000000000    0.0000000000000000
+     0.5000000095058164    0.8660253995413444    0.0000000000000000
+     0.0000000000000000    0.0000000000000000    4.5775489799070801
+   Pt     O     H 
+    27     24     48
+Selective dynamics
+Direct"""
+output2.writelines((header2,'\n'))
+
 output3 = open('POSCAR_imp', 'w')
-header3 = """C  H  O  Pt                             
+header3 = """Pt   C   O   H                             
    8.41590000000000     
      1.0000000000000000    0.0000000000000000    0.0000000000000000
      0.5000000095058164    0.8660253995413444    0.0000000000000000
@@ -236,69 +246,77 @@ header3 = """C  H  O  Pt
     27   3    NO    NH
 Selective dynamics
 Direct"""
-output3.writelines((header3.replace("NO" ,str(count+3)).replace("NH" , str(2*count+N-27-3-27-48)),'\n'))
+output3.writelines((header3.replace("NO" ,str(len(temp)/3+3)).replace("NH" , str(2*len(temp)/3+N-27-3-27-48)),'\n'))
 
-file = open(sys.argv[1],'r')  
-for line in file:
-    if not line: continue
-    if flag == -1:
-        words = string.split(line)
-        grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
-        nlines += 1
-        if nlines <= 27+6 :
-            output3.writelines(grab)
-        elif nlines > (N-(N-27-3-27-48)):
-            temp.append((words[1],words[2],words[3],words[4]))
-    if line.startswith('ITEM: ATOMS'):
-       flag = -1
-file.close
-for i in range(len(link)):
-     if 0 <= float(link[i][1]) <= 1  and 0 <= float(link[i][2]) <= 1:
-        grab = ((link[i][1],'    ' , link[i][2] ,'    ' , link[i][3], '     F    F    F', '\n'))
-        output3.writelines(grab)
-        for j in range(len(h2)):
-            do2h2 = nsth(link[i],h2[j])
-            if do2h2 <= 1.2:
-                temp.append(h2[j])
-for i in range(len(temp)):
-    grab = ((temp[i][1],'    ' , temp[i][2] ,'    ' , temp[i][3], '     F    F    F', '\n'))
-    output3.writelines(grab)
-output3.close
-
-temp = []
-flag = nlines = 0
 output4 = open('POSCAR_impbg', 'w')
-header4 = """C  H  O  Pt                             
+header4 = """Pt   C   O   H                             
    8.41590000000000     
      1.0000000000000000    0.0000000000000000    0.0000000000000000
      0.5000000095058164    0.8660253995413444    0.0000000000000000
      0.0000000000000000    0.0000000000000000    4.5775489799070801
-   Pt     O    H 
+   Pt     O     H 
     27    NO    NH
 Selective dynamics
 Direct"""
-output4.writelines((header4.replace("NO" ,str(count)).replace("NH" , str(2*count)),'\n'))
-file = open(sys.argv[1],'r')  
+output4.writelines((header4.replace("NO" ,str(len(temp)/3)).replace("NH" , str(2*len(temp)/3)),'\n'))
+
 for line in file:
     if not line: continue
-    if flag == -1:
-        words = string.split(line)
-        grab = ((words[2],'    ' , words[3] ,'    ' , words[4], '     F    F    F', '\n'))
-        nlines += 1
-        if nlines <= 27 :
-            output4.writelines(grab)
     if line.startswith('ITEM: ATOMS'):
-       flag = -1
+        flag = 1
+        continue
+    if flag == 1 and fixedposcar == 0:     
+        nlines += 1
+        words = string.split(line)
+        tail = 'F     F     F\n'
+        grab = words[2]+'     ' + words[3] +'     ' + words[4]+'     '
+        if nlines <= 27:
+            output1.writelines(grab+tail)
+            output2.writelines(grab+tail)
+            output3.writelines(grab+tail)
+            output4.writelines(grab+tail)
+        elif (nlines < 34 or nlines > N-(N-27-3-27-48)):
+            tail = 'T     T     T\n'
+            output1.writelines(grab+tail)
+            output3.writelines(grab+tail)
+        else:
+            if (words[0] in temp):
+                tail = 'T     T     T\n'
+                output1.writelines(grab+tail)
+                output2.writelines(grab+tail)
+                output3.writelines(grab+tail)
+                output4.writelines(grab+tail)
+            else:
+                tail = 'F     F     F\n'
+                output1.writelines(grab+tail)
+                output2.writelines(grab+tail)
+    elif flag == 1 and fixedposcar == 1:
+        nlines += 1
+        words = string.split(line)
+        tail = 'F     F     F\n'
+        grab = words[2]+'     ' + words[3] +'     ' + words[4]+'     '
+        if nlines <= 27:
+            output1.writelines(grab+tail)
+            output2.writelines(grab+tail)
+            output3.writelines(grab+tail)
+            output4.writelines(grab+tail)
+        elif (nlines < 34 or nlines > N-(N-27-3-27-48)):
+            output1.writelines(grab+tail)
+            output3.writelines(grab+tail)
+        else:
+            if (words[0] in temp):
+                output1.writelines(grab+tail)
+                output2.writelines(grab+tail)
+                output3.writelines(grab+tail)
+                output4.writelines(grab+tail)
+            else:
+                output1.writelines(grab+tail)
+                output2.writelines(grab+tail)
+   
 file.close
-for i in range(len(link)):
-     if 0 <= float(link[i][1]) <= 1  and 0 <= float(link[i][2]) <= 1:
-        grab = ((link[i][1],'    ' , link[i][2] ,'    ' , link[i][3], '     F    F    F', '\n'))
-        output4.writelines(grab)
-        for j in range(len(h2)):
-            do2h2 = nsth(link[i],h2[j])
-            if do2h2 <= 1.2:
-                temp.append(h2[j])
-for i in range(len(temp)):
-    grab = ((temp[i][1],'    ' , temp[i][2] ,'    ' , temp[i][3], '     F    F    F', '\n'))
-    output4.writelines(grab)
+output1.close
+output2.close
+output3.close
 output4.close
+
+
