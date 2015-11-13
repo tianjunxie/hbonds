@@ -4,6 +4,9 @@ want to develop the code also capable of
 generating POSCAR with both explicit water solvation
 and implicit water solvation. 
 
+
+11/12 Update: Now compatible with C3HxOx adsorbates
+
 10/22 Update: Reconfigured outputting algorithm, now can export with POSCARS
               partial fixed flags on for NEB-dimer/geometry optimization
               or,
@@ -12,7 +15,7 @@ and implicit water solvation.
 NOTE: for **************   EXPORTING   ************* POSCAR files
 *****************************IMPORTANT***********************************
 
-For now the code can EXPORT C3HxO3 related POSCARS.
+For now the code can EXPORT C3HxOx related POSCARS.
    i.e. No correct number of C or O atoms will show up
         in the POSCAR files IF the system is not for C3HxO3.
 
@@ -21,10 +24,11 @@ NOTE: for **************   COUNTING   ************* lammps frames
    (Can turn it back on when needed).
 
    Default settings:
-**********************************rHS = ['8','9']************************   
-**********************************rOS = ['4','5']************************   
-**********************************rHW = ['7']    ************************
-**********************************rOW = ['6']    ************************
+rHS = ['10','11']
+rOS = ['6']
+rHW = ['9']
+rOW = ['8']
 
 Future improvement,
-1. Update neighbor list to fasten hbonding counting
+1. Update neighbor list to fasten hbonding counting.
+2. Reduce input by reading the data file for automated identification of atom types.

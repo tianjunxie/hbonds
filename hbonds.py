@@ -72,10 +72,17 @@ def find(y):
 # rHW = ['7']
 # rOW = ['6']
 
-rHS = ['9','10']
-rOS = ['5','6']
-rHW = ['8']
-rOW = ['7']
+# rHS = ['9','10']
+# rOS = ['5','6']
+# rHW = ['8']
+# rOW = ['7']
+
+
+rHS = ['10','11']
+rOS = ['6']
+rHW = ['9']
+rOW = ['8']
+
 fixedposcar = 1
 
 file = open(sys.argv[1],'r')
@@ -125,6 +132,12 @@ h1 = [x for x in h1 if x != None]
 h2 = [x for x in h2 if x != None]
 o1 = [x for x in o1 if x != None]
 o2 = [x for x in o2 if x != None]
+NH = (len(h1)+len(h2))/5
+NHW = len(h2)/5
+NHS = NH - NHW
+NO = (len(o1)+len(o2))/5
+NOW = len(o2)/5
+NOS = NO - NOW
 
 for i in range(len(h1)):
     for j in range(len(o1)):
@@ -148,9 +161,9 @@ lw=sorted(temp)
 print('\nFound Total Number of atoms: %d' % N)
 print '----------------------------------------------------'
 if fixedposcar == 1:
-    print('Will export all fixed POSCAR coordinates for single point calculation')
+    print('Will export ALL FIXED POSCAR coordinates')
 else:
-    print('Will export partial relaxed POSCAR coordinates for VASP')
+    print('Will export PARTIAL RELAXED POSCAR coordinates')
 print 'To change, fixedposcar = 1    will give    all fixed flags '
 print '           fixedposcar = 0    will give partil fixed flags '
 print '----------------------------------------------------'
@@ -219,10 +232,10 @@ header1 = """Pt   C   O   H
      0.5000000095058164    0.8660253995413444    0.0000000000000000
      0.0000000000000000    0.0000000000000000    4.5775489799070801
    Pt   C    O    H 
-    27     3     27     NH
+    27     3     NO     NH
 Selective dynamics
 Direct"""
-output1.writelines((header1.replace("NH" , str(N-27-3-27)),'\n'))
+output1.writelines((header1.replace("NO" ,str(NO)).replace("NH" , str(NH)),'\n'))
 
 output2 = open('POSCAR_expbg', 'w')
 header2 = """Pt   C   O   H                             
@@ -231,10 +244,10 @@ header2 = """Pt   C   O   H
      0.5000000095058164    0.8660253995413444    0.0000000000000000
      0.0000000000000000    0.0000000000000000    4.5775489799070801
    Pt     O     H 
-    27     24     48
+    27     NO     NH
 Selective dynamics
 Direct"""
-output2.writelines((header2,'\n'))
+output2.writelines((header2.replace("NO" ,str(NOW)).replace("NH" , str(NHW)),'\n'))
 
 output3 = open('POSCAR_imp', 'w')
 header3 = """Pt   C   O   H                             
@@ -246,7 +259,7 @@ header3 = """Pt   C   O   H
     27   3    NO    NH
 Selective dynamics
 Direct"""
-output3.writelines((header3.replace("NO" ,str(len(temp)/3+3)).replace("NH" , str(2*len(temp)/3+N-27-3-27-48)),'\n'))
+output3.writelines((header3.replace("NO" ,str(len(temp)/3+NOS)).replace("NH" , str(2*len(temp)/3+NHS)),'\n'))
 
 output4 = open('POSCAR_impbg', 'w')
 header4 = """Pt   C   O   H                             
@@ -275,7 +288,7 @@ for line in file:
             output2.writelines(grab+tail)
             output3.writelines(grab+tail)
             output4.writelines(grab+tail)
-        elif (nlines < 34 or nlines > N-(N-27-3-27-48)):
+        elif (nlines < 34 or nlines > N-(N-27-3-NO-NHW)):
             tail = 'T     T     T\n'
             output1.writelines(grab+tail)
             output3.writelines(grab+tail)
@@ -300,7 +313,7 @@ for line in file:
             output2.writelines(grab+tail)
             output3.writelines(grab+tail)
             output4.writelines(grab+tail)
-        elif (nlines < 34 or nlines > N-(N-27-3-27-48)):
+        elif (nlines < 34 or nlines > N-(N-27-3-NO-NHW)):
             output1.writelines(grab+tail)
             output3.writelines(grab+tail)
         else:
