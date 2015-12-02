@@ -36,7 +36,7 @@ def ang(d1,d2,d3):# Note: square of the distances
     return math.degrees(math.acos((d1 + d2 - d3)/(2.0 * math.sqrt(d1) * math.sqrt(d2))))
 
 def find(y):
-    x=grab=grabxp=grabxn=grabyp=grabyn = [None] * 10000
+    x=grab= grabxp = grabxn = grabyp = grabyn = grabxpyp = grabxnyn = grabxnyp = grabxpyn = [None] * 50000
     file = open(sys.argv[1],'r')
     for i in range(9):
         file.readline() # skip first 9 lines
@@ -48,13 +48,21 @@ def find(y):
         grabxn = ((words[1],str(float(words[2])-1),words[3],words[4],words[0]))
         grabyp = ((words[1],words[2],str(float(words[3])+1),words[4],words[0]))
         grabyn = ((words[1],words[2],str(float(words[3])-1),words[4],words[0]))
+        grabxpyp = ((words[1],str(float(words[2])+1),str(float(words[3])+1),words[4],words[0]))
+        grabxpyn = ((words[1],str(float(words[2])+1),str(float(words[3])-1),words[4],words[0]))
+        grabxnyp = ((words[1],str(float(words[2])-1),str(float(words[3])+1),words[4],words[0]))
+        grabxnyn = ((words[1],str(float(words[2])-1),str(float(words[3])-1),words[4],words[0]))
         for j in range(len(y)):
             if grab[0] == y[j]:
-                x[5*i+0]=grab
-                x[5*i+1]=grabxp
-                x[5*i+2]=grabxn
-                x[5*i+3]=grabyp
-                x[5*i+4]=grabyn
+                x[9*i+0]=grab
+                x[9*i+1]=grabxp
+                x[9*i+2]=grabxn
+                x[9*i+3]=grabyp
+                x[9*i+4]=grabyn
+                x[9*i+5]=grabxpyp
+                x[9*i+6]=grabxpyn
+                x[9*i+7]=grabxnyp
+                x[9*i+8]=grabxnyn
     file.close()
     return(x)
 
@@ -62,6 +70,7 @@ def find(y):
 # rOS = string.split((raw_input('atom ID of O_adsorbate : ')))
 # rHW = string.split((raw_input('atom ID of H_water     : ')))
 # rOW = string.split((raw_input('atom ID of O_water     : ')))
+
 # rHS = []
 # rOS = ['3']
 # rHW = ['5']
@@ -132,11 +141,11 @@ h1 = [x for x in h1 if x != None]
 h2 = [x for x in h2 if x != None]
 o1 = [x for x in o1 if x != None]
 o2 = [x for x in o2 if x != None]
-NH = (len(h1)+len(h2))/5
-NHW = len(h2)/5
+NH = (len(h1)+len(h2))/9
+NHW = len(h2)/9
 NHS = NH - NHW
-NO = (len(o1)+len(o2))/5
-NOW = len(o2)/5
+NO = (len(o1)+len(o2))/9
+NOW = len(o2)/9
 NOS = NO - NOW
 
 for i in range(len(h1)):
