@@ -4,6 +4,9 @@ want to develop the code also capable of
 generating POSCAR with both explicit water solvation
 and implicit water solvation. 
 
+03/10/16 Update: Output improment, now tells the donar oxygen(s) and the acceptor oxgen(s).
+
+                 
 12/12 Update:	Improvement in calculation speed by cleaning out some legacy float-string conversions.
 				Now can recenter the system to align the bottom Pt to the bottom of box.
 				Formatting improvement.
