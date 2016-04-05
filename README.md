@@ -4,6 +4,9 @@ want to develop the code also capable of
 generating POSCAR with both explicit water solvation
 and implicit water solvation. 
 
+04/05 Update:   Now the code works fast enough so that you don't have to wait minutes for a single frame hbond searching.
+                Default criteria, AD<3.5 ADH<30 AHD>120.
+
 03/10/16 Update: Output improment, now tells the donar oxygen(s) and the acceptor oxgen(s).
 
                  

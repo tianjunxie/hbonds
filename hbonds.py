@@ -78,6 +78,11 @@ def find(y,c):
                 x[9*i+8]=grabxnyn
     file.close()
     return(x)
+
+def cnt(a,b):
+    for i, j in enumerate(b):
+        if j == a:
+            print(i)
 ###############################################   Manual input starts here               ################################################
 # rHS = string.split((raw_input('\natom ID of H_adsorbate : ')))                                                         ################                                                                                                         
 # rOS = string.split((raw_input('atom ID of O_adsorbate : ')))                                                           ################                                                                                                       
@@ -192,33 +197,36 @@ print '           fixedposcar = 0    will give    partailly fixed flags '
 print '------------------------------------------------------------------------------------------------------'
 print('Found Total Number of atoms: %d' % N)
 print '------------------------------------------------------------------------------------------------------'
-print('O_acceptor      O_donar        O-O_Dist              A-H_Dist         ADH_Angle          AHD_Angle    ')
+print('O_acceptor      O_donar        O-O_Dist              A-H_Dist         AHD_Angle             ADH_Angle ')
 print '------------------------------------------------------------------------------------------------------'
 
 temp = []
 for i in range(len(o1)):
    for j in range(len(o2)):
-       for l in range(len(h2)):
-           do2h2 = nsth(o2[j],h2[l])
-           if do2h2<=1.2:
-               # print o2[j][4],h2[l][4],dist(o2[j],h2[l])
-                do1o2 = dist(o1[i] , o2[j])
-                do1h2 = dist(o1[i] , h2[l])
-                A = ang( do2h2 , do1o2 , do1h2)
-                if  do1o2 <= float(12.25) and A <= 30:
-                    link.append(o2[j][4])
-                    temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8), round(math.sqrt(do1h2),8) , round(A,8), round(ang( do2h2 , do1h2, do1o2),8)   ))
-       for l in range(len(h1)):
-           do1h1 = nsth(o1[i],h1[l])
-           if do1h1<=1.2:
-               do1o2 = dist(o1[i] , o2[j])
-               do2h1 = dist(o2[j] , h1[l])
-               # print do1h1,do1o2,do2h1
-               A = ang( do1h1 , do1o2 , do2h1)
-               if  do1o2 <= float(12.25) and A <= 30:
-                   link.append(o2[j][4])
-                   temp.append(( o2[j][4], o1[i][4], round(math.sqrt(do1o2),8) , round(math.sqrt(do2h1),8), round(A,8), round(ang( do1h1 ,do2h1, do1o2 ),8) ))
-  
+        do1o2 = dist(o1[i] , o2[j])  
+        if do1o2 <= float(12.25):
+           for l in range(len(h2)):
+               do2h2 = nsth(o2[j],h2[l])
+               if do2h2<=1.3:
+                    do1h2 = dist(o1[i] , h2[l])
+                    A1 = ang( do1o2 , do1h2, do2h2)
+                    A2 = ang( do2h2 , do1h2, do1o2)
+                    # if A2>=120:  
+                    if A1<=30 and A2>=120:# and do1h2<=6.25:                     
+                        link.append((o1[i][4],o2[j][4],round(math.sqrt(do1o2),8)))
+                        temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8), round(math.sqrt(do1h2),8) , round(A2,8), round(A1,8)  ))
+           for l in range(len(h1)):
+               do1h1 = nsth(o1[i],h1[l])
+               if do1h1<=1.3:
+                    do2h1 = dist(o2[j] , h1[l])
+                    # print do1h1,do1o2,do2h1
+                    A1 = ang( do1o2 , do2h1, do1h1 )
+                    A2 = ang( do1h1 ,do2h1, do1o2 )
+                    # if  A2>=120:
+                    if  A1<=30 and A2>=120:# and do2h1<=6.25:
+                        link.append((o1[i][4],o2[j][4]))
+                        temp.append(( o2[j][4], o1[i][4] ,  round(math.sqrt(do1o2),8) , round(math.sqrt(do2h1),8), round(A2,8), round(A1,8)  ))
+
 temp=list(set(temp))
 temp=sorted(temp)
 temp = [x for x in temp if x != None]
@@ -226,14 +234,13 @@ link=list((set(link)))
 link=sorted(link)
 link = [x for x in link if x != None]
 for i in range(len(temp)):
-    # if i==0 or not((temp[i][1]==temp[i-1][1]) and (temp[i][0]!=temp[i-1][0]) and (temp[i][5]!=temp[i-1][5])):
     print '   ', temp[i][0], "          ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f         " %temp[i][3]," %.8f" %temp[i][4],'  ', "    %.8f   " %temp[i][5]
     count=count+1
 print '______________________________________________________________________________________________________'
 print '------------------------------------------------------------------------------------------------------'
 print 'Total hydrogen bond(s) btw water and the adsorbate:   %d\n' % count
 
-temp = []
+
 for i in range(len(lw)):
     for j in range(len(link)):
         if lw[i][0] == link[j]:
