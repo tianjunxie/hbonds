@@ -4,6 +4,8 @@ want to develop the code also capable of
 generating POSCAR with both explicit water solvation
 and implicit water solvation. 
 
+06/27 Update:   Added the function to calculate the dipole moment for each hydrogen bond found.
+
 04/05 Update:   Now the code works fast enough so that you don't have to wait minutes for a single frame hbond searching.
                 Default criteria, AD<3.5 ADH<30 AHD>120.
 

@@ -9,7 +9,6 @@ temp = lw = la = output = xp = xn = yp = yn = coords = []
 h1 = h2 = o1 = o2 = link = [None] * 10000
 A  = 0
 flag = nlines = 0
-count = 0
 
 def dist(X,Y):
     x1 = X[1]
@@ -20,13 +19,6 @@ def dist(X,Y):
     z2 = Y[3]
     return 2*(x1-x2)*(y1-y2)*a*b*cosgamma + 2*(y1-y2)*(z1-z2)*b*c*cosalpha + 2*(x1-x2)*(z1-z2)*a*c*cosbeta + (x1-x2)*(x1-x2)*a*a + (y1-y2)*(y1-y2)*b*b + (z1-z2)*(z1-z2)*c*c
 
-def nsth(x,y):
-    d=dist(x , y)
-    # d=min(do,dxp1,dxp2,dxn1,dxn2,dyp1,dyp2,dyn1,dyn2)
-    if d<=float(1.2):
-        return(d)
-    else:
-        return(5)
 
 def init():
     x = [None] * 5000
@@ -79,10 +71,6 @@ def find(y,c):
     file.close()
     return(x)
 
-def cnt(a,b):
-    for i, j in enumerate(b):
-        if j == a:
-            print(i)
 ###############################################   Manual input starts here               ################################################
 # rHS = string.split((raw_input('\natom ID of H_adsorbate : ')))                                                         ################                                                                                                         
 # rOS = string.split((raw_input('atom ID of O_adsorbate : ')))                                                           ################                                                                                                       
@@ -164,21 +152,21 @@ NO = (len(o1)+len(o2))/9
 NOW = len(o2)/9
 NOS = NO - NOW
 
-# for i in range(len(h1)):
-#     for j in range(len(o1)):
-#         d = nsth(h1[i],o1[j])
-#         if d <= 1.2:
-#             temp.append((o1[j],h1[i],round(d,8)))
-# temp=list(set(temp))
-# la=sorted(temp)
-# temp = []
-# for i in range(len(h2)):
-#     for j in range(len(o2)):
-#         d = nsth(h2[i],o2[j])
-#         if d <= 1.2:
-#             temp.append((o2[j],h2[i],round(d,8)))
-# temp=list(set(temp))
-# lw=sorted(temp)
+for i in range(len(h1)):
+    for j in range(len(o1)):
+        d = dist(h1[i],o1[j])
+        if d <= 1.2:
+            temp.append((o1[j],h1[i],round(d,8)))
+temp=list(set(temp))
+la=sorted(temp)
+temp = []
+for i in range(len(h2)):
+    for j in range(len(o2)):
+        d = dist(h2[i],o2[j])
+        if d <= 1.2:
+            temp.append((o2[j],h2[i],round(d,8)))
+temp=list(set(temp))
+lw=sorted(temp)
 # for i in range(len(la)):
 #     print la[i]
 # print len(la)
@@ -187,45 +175,48 @@ NOS = NO - NOW
 # print len(lw)
 
 #########################################################################################################################################################
-print '------------------------------------------------------------------------------------------------------'
+print '----------------------------------------------------------------------------------------------------------------------------'
 if fixedposcar == 1:
     print('export ALL FIXED POSCAR coordinates')
 else:
     print('export PARTIAL RELAXED POSCAR coordinates')
 print 'To change, fixedposcar = 1    will give    all fixed flags '
 print '           fixedposcar = 0    will give    partailly fixed flags '
-print '------------------------------------------------------------------------------------------------------'
+print '----------------------------------------------------------------------------------------------------------------------------'
 print('Found Total Number of atoms: %d' % N)
-print '------------------------------------------------------------------------------------------------------'
-print('O_acceptor      O_donar        O-O_Dist              A-H_Dist         AHD_Angle             ADH_Angle ')
-print '------------------------------------------------------------------------------------------------------'
+print '----------------------------------------------------------------------------------------------------------------------------'
+print('O_acceptor      O_donar        O-O_Dist              A-H_Dist         AHD_Angle            ADH_Angle      A-H dipole moment')
+print '----------------------------------------------------------------------------------------------------------------------------'
 
-temp = []
+fo1 = fo2 =temp = []
+
 for i in range(len(o1)):
    for j in range(len(o2)):
         do1o2 = dist(o1[i] , o2[j])  
         if do1o2 <= float(12.25):
            for l in range(len(h2)):
-               do2h2 = nsth(o2[j],h2[l])
-               if do2h2<=1.3:
+               do2h2 = dist(o2[j],h2[l])
+               if do2h2<=1.2:
                     do1h2 = dist(o1[i] , h2[l])
                     A1 = ang( do1o2 , do1h2, do2h2)
                     A2 = ang( do2h2 , do1h2, do1o2)
                     # if A2>=120:  
-                    if A1<=30 and A2>=120:# and do1h2<=6.25:                     
-                        link.append((o1[i][4],o2[j][4],round(math.sqrt(do1o2),8)))
-                        temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8), round(math.sqrt(do1h2),8) , round(A2,8), round(A1,8)  ))
+                    if A1<=30 and A2>=120:# and do1h2<=6.25:
+                        dipole_dipole = str((round(o1[i][1]-h2[l][1],3), round(o1[i][2]-h2[l][2],3),  round(o1[i][3]-h2[l][3],3)))                     
+                        link.append((o1[i][4],o2[j][4]))
+                        temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8), round(math.sqrt(do1h2),8) , round(A2,8), round(A1,8), dipole_dipole  ))
            for l in range(len(h1)):
-               do1h1 = nsth(o1[i],h1[l])
-               if do1h1<=1.3:
+               do1h1 = dist(o1[i],h1[l])
+               if do1h1<=1.2:
                     do2h1 = dist(o2[j] , h1[l])
                     # print do1h1,do1o2,do2h1
                     A1 = ang( do1o2 , do2h1, do1h1 )
                     A2 = ang( do1h1 ,do2h1, do1o2 )
                     # if  A2>=120:
                     if  A1<=30 and A2>=120:# and do2h1<=6.25:
-                        link.append((o1[i][4],o2[j][4]))
-                        temp.append(( o2[j][4], o1[i][4] ,  round(math.sqrt(do1o2),8) , round(math.sqrt(do2h1),8), round(A2,8), round(A1,8)  ))
+                        dipole_dipole = str((round(o2[i][1]-h1[l][1],3), round(o2[i][2]-h1[l][2],3),  round(o2[i][3]-h1[l][3],3)))
+                        link.append((o2[j][4], o1[i][4]))
+                        temp.append(( o2[j][4], o1[i][4] ,  round(math.sqrt(do1o2),8) , round(math.sqrt(do2h1),8), round(A2,8), round(A1,8), dipole_dipole  ))
 
 temp=list(set(temp))
 temp=sorted(temp)
@@ -233,22 +224,36 @@ temp = [x for x in temp if x != None]
 link=list((set(link)))
 link=sorted(link)
 link = [x for x in link if x != None]
-for i in range(len(temp)):
-    print '   ', temp[i][0], "          ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f         " %temp[i][3]," %.8f" %temp[i][4],'  ', "    %.8f   " %temp[i][5]
-    count=count+1
-print '______________________________________________________________________________________________________'
-print '------------------------------------------------------------------------------------------------------'
-print 'Total hydrogen bond(s) btw water and the adsorbate:   %d\n' % count
+if link!=[]:
+    fo1, fo2 = zip(*link)
+i=0
+for x in fo1:
+    if fo1.count(x)==1:
+        print '   ', temp[i][0], "    I      ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f    " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5], temp[i][6]
+    if fo1.count(x)==2:
+        print '   ', temp[i][0], "    II     ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f    " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5], temp[i][6]
+    if fo1.count(x)==3:
+        print '   ', temp[i][0], "    III    ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f    " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5], temp[i][6]        
+    i=i+1   
+
+if i!= len(temp):
+    print "warning"
+
+# for i in range(len(temp)):
+#     print '   ', temp[i][0], "          ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f         " %temp[i][3]," %.8f" %temp[i][4],'  ', "    %.8f   " %temp[i][5]
+print '___________________________________________________________________________________________________________________________'
+print 'Total hydrogen bond(s) btw water and the adsorbate:   %d\n' % (i)
 
 
+temp=[]
 for i in range(len(lw)):
     for j in range(len(link)):
-        if lw[i][0] == link[j]:
-            temp.append(lw[i][0])
-            temp.append(lw[i][1])
+        if lw[i][0][4] == link[j][0] or lw[i][0][4] == link[j][1]:
+            temp.append(lw[i][0][4])
+            temp.append(lw[i][1][4])
 temp=list(set(temp))
-# identifying the total number of atoms as N and write corresponding poscar
 
+# identifying the total number of atoms as N and write corresponding poscar
 output1 = open('POSCAR', 'w')
 header1 = """                             
    8.41590000000000     
