@@ -93,7 +93,7 @@ rOS = [6,7]                                                                     
 rHW = [9]                                                                                                                ################                                                  
 rOW = [8]                                                                                                                ################                                                  
                                                                                                                          ################                                         
-fixedposcar = 1                                                                                                          ################                                                        
+fixedposcar = 0                                                                                                          ################                                                        
                                                                                                                          ################
 ###############################################   Manual input ends here               ##################################################
 file = open(sys.argv[1],'r')
@@ -106,17 +106,26 @@ line = file.readline()
 words = string.split(line)
 xlo_bound = float(words[0])
 xhi_bound = float(words[1])
-xy =  float(words[2])
+if len(words)==3:
+    xy =  float(words[2])
+else:
+    xy = 0    # get xy value for the box
 line = file.readline()
 words = string.split(line)
 ylo_bound =  float(words[0])
 yhi_bound =  float(words[1])
-xz =   float(words[2])
+if len(words)==3:
+    xz =  float(words[2])
+else:
+    xz = 0    # get xz value for the box
 line = file.readline()
 words = string.split(line)
 zlo =   float(words[0])
 zhi =   float(words[1])
-yz =    float(words[2])
+if len(words)==3:
+    yz =  float(words[2])
+else:
+    yz = 0    # get yz value for the box
 xlo = xlo_bound - min(0.0,xy,xz,xy+xz)
 xhi = xhi_bound - max(0.0,xy,xz,xy+xz)
 ylo = ylo_bound - min(0.0,yz)
@@ -130,12 +139,14 @@ c=math.sqrt(lz*lz+xz*xz+yz*yz)
 cosalpha = (xy*xz+ly*yz)/b/c
 cosbeta = xz/c
 cosgamma = xy/b
+V = math.sqrt((1-cosalpha*cosalpha-cosbeta*cosbeta-cosgamma*cosgamma+2*cosalpha*cosbeta*cosgamma))*a*b*c
 # print xlo, xhi, ylo, yhi,zlo, zhi, xy, xz, yz
-# print a, b, c, cosalpha, cosbeta, cosgamma
+print '--------------------------------------------------------------------------------------------------------'
+print "lattice info: ", a, b, c, cosalpha, cosbeta, cosgamma, V
 file.close
 # ########################################################################################################################################################
 
-coords = init()
+coords = init() #reads in atoms coords
 h1 = find (rHS,coords)
 h2 = find (rHW,coords)
 o1 = find (rOS,coords)
@@ -175,19 +186,17 @@ lw=sorted(temp)
 # print len(lw)
 
 #########################################################################################################################################################
-print '----------------------------------------------------------------------------------------------------------------------------'
-if fixedposcar == 1:
+print '--------------------------------------------------------------------------------------------------------'
+if fixedposcar == 0:
     print('export ALL FIXED POSCAR coordinates')
 else:
     print('export PARTIAL RELAXED POSCAR coordinates')
-print 'To change, fixedposcar = 1    will give    all fixed flags '
-print '           fixedposcar = 0    will give    partailly fixed flags '
-print '----------------------------------------------------------------------------------------------------------------------------'
+####################   To change, fixedposcar = 1    will give    all fixed flags '
+#                                 fixedposcar = 0    will give    partailly fixed flags '
 print('Found Total Number of atoms: %d' % N)
-print '----------------------------------------------------------------------------------------------------------------------------'
-print('O_acceptor      O_donar        O-O_Dist              A-H_Dist         AHD_Angle            ADH_Angle      A-H dipole moment')
-print '----------------------------------------------------------------------------------------------------------------------------'
-
+print '________________________________________________________________________________________________________'
+print('O_acceptor      O_donar        O-O_Dist              A-H_Dist         AHD_Angle             ADH_Angle ')
+print '________________________________________________________________________________________________________'
 fo1 = fo2 =temp = []
 
 for i in range(len(o1)):
@@ -196,27 +205,25 @@ for i in range(len(o1)):
         if do1o2 <= float(12.25):
            for l in range(len(h2)):
                do2h2 = dist(o2[j],h2[l])
-               if do2h2<=1.2:
+               if do2h2<=1.3:
                     do1h2 = dist(o1[i] , h2[l])
                     A1 = ang( do1o2 , do1h2, do2h2)
                     A2 = ang( do2h2 , do1h2, do1o2)
                     # if A2>=120:  
-                    if A1<=30 and A2>=120:# and do1h2<=6.25:
-                        dipole_dipole = str((round(o1[i][1]-h2[l][1],3), round(o1[i][2]-h2[l][2],3),  round(o1[i][3]-h2[l][3],3)))                     
+                    if A1<=30 and A2>=120:# and do1h2<=6.25:                     
                         link.append((o1[i][4],o2[j][4]))
-                        temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8), round(math.sqrt(do1h2),8) , round(A2,8), round(A1,8), dipole_dipole  ))
+                        temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8), round(math.sqrt(do1h2),8) , round(A2,8), round(A1,8)  ))
            for l in range(len(h1)):
                do1h1 = dist(o1[i],h1[l])
-               if do1h1<=1.2:
+               if do1h1<=1.3:
                     do2h1 = dist(o2[j] , h1[l])
                     # print do1h1,do1o2,do2h1
                     A1 = ang( do1o2 , do2h1, do1h1 )
                     A2 = ang( do1h1 ,do2h1, do1o2 )
                     # if  A2>=120:
                     if  A1<=30 and A2>=120:# and do2h1<=6.25:
-                        dipole_dipole = str((round(o2[i][1]-h1[l][1],3), round(o2[i][2]-h1[l][2],3),  round(o2[i][3]-h1[l][3],3)))
                         link.append((o2[j][4], o1[i][4]))
-                        temp.append(( o2[j][4], o1[i][4] ,  round(math.sqrt(do1o2),8) , round(math.sqrt(do2h1),8), round(A2,8), round(A1,8), dipole_dipole  ))
+                        temp.append(( o2[j][4], o1[i][4] ,  round(math.sqrt(do1o2),8) , round(math.sqrt(do2h1),8), round(A2,8), round(A1,8)  ))
 
 temp=list(set(temp))
 temp=sorted(temp)
@@ -229,11 +236,11 @@ if link!=[]:
 i=0
 for x in fo1:
     if fo1.count(x)==1:
-        print '   ', temp[i][0], "    I      ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f    " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5], temp[i][6]
+        print '   ', temp[i][0], "    I      ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
     if fo1.count(x)==2:
-        print '   ', temp[i][0], "    II     ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f    " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5], temp[i][6]
+        print '   ', temp[i][0], "    II     ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
     if fo1.count(x)==3:
-        print '   ', temp[i][0], "    III    ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f    " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5], temp[i][6]        
+        print '   ', temp[i][0], "    III    ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]        
     i=i+1   
 
 if i!= len(temp):
@@ -241,8 +248,8 @@ if i!= len(temp):
 
 # for i in range(len(temp)):
 #     print '   ', temp[i][0], "          ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f         " %temp[i][3]," %.8f" %temp[i][4],'  ', "    %.8f   " %temp[i][5]
-print '___________________________________________________________________________________________________________________________'
-print 'Total hydrogen bond(s) btw water and the adsorbate:   %d\n' % (i)
+print '________________________________________________________________________________________________________'
+print 'Total hydrogen bond(s) btw water and the adsorbate:  %d\n' % (i)
 
 
 temp=[]
@@ -304,7 +311,7 @@ output4.writelines((header4.replace("NO" ,str(len(temp)/3)).replace("NH" , str(2
 
 for i in range(len(coords)):
     grab = [coords[i][1],coords[i][2],coords[i][3],coords[i][4]]
-    if fixedposcar != 1:
+    if fixedposcar == 0:
         tail = 'F     F     F\n'
         if i+1 <= 27:
             print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
