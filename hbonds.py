@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import string,sys
-import math
+from math import *
 import os
 
 # from decimal import Decimal
@@ -21,7 +21,7 @@ def dist(X,Y):
 
 
 def init():
-    x = [None] * 5000
+    x = [None] * 50000
     file = open(sys.argv[1],'r')
     for i in range(9):
         file.readline() # skip first 9 lines
@@ -31,22 +31,22 @@ def init():
         x.append(words)
     file.close()
     x = [a for a in x if a != None]
-    dx = 1- x[0][2]
+    dx = x[0][2]
     dy = x[0][3]
     dz = x[0][4]
     for i in range(len(x)):
         x[i][0] = int(x[i][0])
         x[i][1] = int(x[i][1])
-        x[i][2] = x[i][2] + dx
+        x[i][2] = x[i][2] - dx
         x[i][3] = x[i][3] - dy
         x[i][4] = x[i][4] - dz
     return (x)
 
 def ang(d1,d2,d3):# Note: square of the distances
-    return math.degrees(math.acos((d1 + d2 - d3)/(2.0 * math.sqrt(d1) * math.sqrt(d2))))
+    return degrees( acos((d1 + d2 - d3)/(2.0 * sqrt(d1) * sqrt(d2))) )
 
 def find(y,c):
-    x=grab= grabxp = grabxn = grabyp = grabyn = grabxpyp = grabxnyn = grabxnyp = grabxpyn = [None] * 50000
+    x =grab= grabxp = grabxn = grabyp = grabyn = grabxpyp = grabxnyn = grabxnyp = grabxpyn = [None] * 50000
     for i in range(len(c)):
         grab = ((c[i][1],c[i][2],c[i][3],c[i][4],c[i][0]))
         grabxp = ((c[i][1],c[i][2]+1,c[i][3],c[i][4],c[i][0]))
@@ -59,15 +59,15 @@ def find(y,c):
         grabxnyn = ((c[i][1],c[i][2]-1,c[i][3]-1,c[i][4],c[i][0]))
         for j in range(len(y)):
             if grab[0] == y[j]:
-                x[9*i+0]=grab
-                x[9*i+1]=grabxp
-                x[9*i+2]=grabxn
-                x[9*i+3]=grabyp
-                x[9*i+4]=grabyn
-                x[9*i+5]=grabxpyp
-                x[9*i+6]=grabxpyn
-                x[9*i+7]=grabxnyp
-                x[9*i+8]=grabxnyn
+                x[9*i+0]=grab # original
+                x[9*i+1]=grabxp # +x
+                x[9*i+2]=grabxn # -x
+                x[9*i+3]=grabyp # +y
+                x[9*i+4]=grabyn # -y
+                x[9*i+5]=grabxpyp # +x+y
+                x[9*i+6]=grabxpyn # +x-y
+                x[9*i+7]=grabxnyp # -x+y
+                x[9*i+8]=grabxnyn # -x-y
     file.close()
     return(x)
 
@@ -93,7 +93,7 @@ rOS = [6,7]                                                                     
 rHW = [9]                                                                                                                ################                                                  
 rOW = [8]                                                                                                                ################                                                  
                                                                                                                          ################                                         
-fixedposcar = 0                                                                                                          ################                                                        
+fixedposcar = 0   # 0 all fixed, 1 not all fixed                                                                                                       ################                                                        
                                                                                                                          ################
 ###############################################   Manual input ends here               ##################################################
 file = open(sys.argv[1],'r')
@@ -109,7 +109,7 @@ xhi_bound = float(words[1])
 if len(words)==3:
     xy =  float(words[2])
 else:
-    xy = 0    # get xy value for the box
+    xy = 0    # get xy value for the box, now supports both triclinic and orthorgonal
 line = file.readline()
 words = string.split(line)
 ylo_bound =  float(words[0])
@@ -117,7 +117,7 @@ yhi_bound =  float(words[1])
 if len(words)==3:
     xz =  float(words[2])
 else:
-    xz = 0    # get xz value for the box
+    xz = 0    # get xz value for the box, now supports both triclinic and orthorgonal
 line = file.readline()
 words = string.split(line)
 zlo =   float(words[0])
@@ -125,7 +125,7 @@ zhi =   float(words[1])
 if len(words)==3:
     yz =  float(words[2])
 else:
-    yz = 0    # get yz value for the box
+    yz = 0    # get yz value for the box, now supports both triclinic and orthorgonal
 xlo = xlo_bound - min(0.0,xy,xz,xy+xz)
 xhi = xhi_bound - max(0.0,xy,xz,xy+xz)
 ylo = ylo_bound - min(0.0,yz)
@@ -134,27 +134,35 @@ lx=xhi-xlo
 ly=yhi-ylo
 lz=zhi-zlo
 a=lx
-b=math.sqrt(ly*ly+xy*xy)
-c=math.sqrt(lz*lz+xz*xz+yz*yz)
+b=sqrt(ly*ly+xy*xy)
+c=sqrt(lz*lz+xz*xz+yz*yz)
 cosalpha = (xy*xz+ly*yz)/b/c
 cosbeta = xz/c
 cosgamma = xy/b
-V = math.sqrt((1-cosalpha*cosalpha-cosbeta*cosbeta-cosgamma*cosgamma+2*cosalpha*cosbeta*cosgamma))*a*b*c
+V = sqrt((1-cosalpha*cosalpha-cosbeta*cosbeta-cosgamma*cosgamma+2*cosalpha*cosbeta*cosgamma))*a*b*c
 # print xlo, xhi, ylo, yhi,zlo, zhi, xy, xz, yz
 print '--------------------------------------------------------------------------------------------------------'
-print "lattice info: ", a, b, c, cosalpha, cosbeta, cosgamma, V
+print "lattice info: ", a, b, c, degrees(acos(cosalpha)), degrees(acos(cosbeta)), degrees(acos(cosgamma)), V
+bx = b*cosgamma
+cx = c*cosbeta
+by = b*sqrt(1-cosgamma*cosgamma)
+cy = c*(cosalpha-cosbeta*cosgamma)/sqrt(1-cosgamma*cosgamma)
 file.close
 # ########################################################################################################################################################
 
 coords = init() #reads in atoms coords
+
 h1 = find (rHS,coords)
 h2 = find (rHW,coords)
 o1 = find (rOS,coords)
 o2 = find (rOW,coords)
+C = find (rC,coords)
+
 h1 = [x for x in h1 if x != None]
 h2 = [x for x in h2 if x != None]
 o1 = [x for x in o1 if x != None]
 o2 = [x for x in o2 if x != None]
+C = [x for x in C if x != None]
 
 NH = (len(h1)+len(h2))/9
 NHW = len(h2)/9
@@ -162,6 +170,8 @@ NHS = NH - NHW
 NO = (len(o1)+len(o2))/9
 NOW = len(o2)/9
 NOS = NO - NOW
+NC = len(C)/9
+NPt=N-NC-NO-NH
 
 for i in range(len(h1)):
     for j in range(len(o1)):
@@ -194,6 +204,8 @@ else:
 ####################   To change, fixedposcar = 1    will give    all fixed flags '
 #                                 fixedposcar = 0    will give    partailly fixed flags '
 print('Found Total Number of atoms: %d' % N)
+print 'Pt C O H'
+print NPt, NC, NO, NH
 print '________________________________________________________________________________________________________'
 print('O_acceptor      O_donar        O-O_Dist              A-H_Dist         AHD_Angle             ADH_Angle ')
 print '________________________________________________________________________________________________________'
@@ -212,7 +224,7 @@ for i in range(len(o1)):
                     # if A2>=120:  
                     if A1<=30 and A2>=120:# and do1h2<=6.25:                     
                         link.append((o1[i][4],o2[j][4]))
-                        temp.append((o1[i][4] , o2[j][4] , round(math.sqrt(do1o2),8), round(math.sqrt(do1h2),8) , round(A2,8), round(A1,8)  ))
+                        temp.append((o1[i][4] , o2[j][4] , round(sqrt(do1o2),8), round(sqrt(do1h2),8) , round(A2,8), round(A1,8)  ))
            for l in range(len(h1)):
                do1h1 = dist(o1[i],h1[l])
                if do1h1<=1.3:
@@ -223,7 +235,7 @@ for i in range(len(o1)):
                     # if  A2>=120:
                     if  A1<=30 and A2>=120:# and do2h1<=6.25:
                         link.append((o2[j][4], o1[i][4]))
-                        temp.append(( o2[j][4], o1[i][4] ,  round(math.sqrt(do1o2),8) , round(math.sqrt(do2h1),8), round(A2,8), round(A1,8)  ))
+                        temp.append(( o2[j][4], o1[i][4] ,  round(sqrt(do1o2),8) , round(sqrt(do2h1),8), round(A2,8), round(A1,8)  ))
 
 temp=list(set(temp))
 temp=sorted(temp)
@@ -260,65 +272,44 @@ for i in range(len(lw)):
             temp.append(lw[i][1][4])
 temp=list(set(temp))
 
-# identifying the total number of atoms as N and write corresponding poscar
-output1 = open('POSCAR', 'w')
-header1 = """                             
-   8.41590000000000     
-     1.0000000000000000    0.0000000000000000    0.0000000000000000
-     0.5000000095058164    0.8660253995413444    0.0000000000000000
-     0.0000000000000000    0.0000000000000000    Z
+# POSCAR outputting
+
+header = """                             
+   1.00000000000000000     
+     ax                   0.0                      0.0
+     bx            by                      0.0
+     cx            cy               cz
    Pt   C    O    H 
-    27     3     NO     NH
+    NPt     NC     NO     NH
 Selective dynamics
 Direct"""
-output1.writelines((header1.replace("NO" ,str(NO)).replace("NH" , str(NH)).replace("Z" , str(c/8.4159)),'\n'))
+header = header.replace("ax" , '%10s'%str(a)).replace("bx" , '%10s'%str(bx)).replace("cx" , '%10s'%str(cx)).replace("by" , '%10s'%str(by)).replace("cy" , '%10s'%str(cy)).replace("cz" , '%10s'%str(c))
+# lattice vectors seeded into header and use the template thereafter
+header = header.replace("NPt" ,str(NPt))
+# header also has fixed Pt # since it is independent of solvation model variantions
+
+output1 = open('POSCAR', 'w')
+output1.writelines((header.replace("NC" ,str(NC)).replace("NO" ,str(NO)).replace("NH" , str(NH)),'\n'))
 
 output2 = open('POSCAR_expbg', 'w')
-header2 = """                             
-   8.41590000000000     
-     1.0000000000000000    0.0000000000000000    0.0000000000000000
-     0.5000000095058164    0.8660253995413444    0.0000000000000000
-     0.0000000000000000    0.0000000000000000    Z
-   Pt     O     H 
-    27     NO     NH
-Selective dynamics
-Direct"""
-output2.writelines((header2.replace("NO" ,str(NOW)).replace("NH" , str(NHW)).replace("Z" , str(c/8.4159)),'\n'))
+output2.writelines((header.replace("NC" ,"").replace("C" ,"").replace("NO" ,str(NOW)).replace("NH" , str(NHW)),'\n'))
 
 output3 = open('POSCAR_imp', 'w')
-header3 = """                            
-   8.41590000000000     
-     1.0000000000000000    0.0000000000000000    0.0000000000000000
-     0.5000000095058164    0.8660253995413444    0.0000000000000000
-     0.0000000000000000    0.0000000000000000    Z
-   Pt   C    O    H 
-    27   3    NO    NH
-Selective dynamics
-Direct"""
-output3.writelines((header3.replace("NO" ,str(len(temp)/3+NOS)).replace("NH" , str(2*len(temp)/3+NHS)).replace("Z" , str(c/8.4159)),'\n'))
+output3.writelines((header.replace("NC" ,str(NC)).replace("NO" ,str(len(temp)/3+NOS)).replace("NH" , str(2*len(temp)/3+NHS)),'\n'))
 
 output4 = open('POSCAR_impbg', 'w')
-header4 = """                             
-   8.41590000000000     
-     1.0000000000000000    0.0000000000000000    0.0000000000000000
-     0.5000000095058164    0.8660253995413444    0.0000000000000000
-     0.0000000000000000    0.0000000000000000    Z
-   Pt     O     H 
-    27    NO    NH
-Selective dynamics
-Direct"""
-output4.writelines((header4.replace("NO" ,str(len(temp)/3)).replace("NH" , str(2*len(temp)/3)).replace("Z" , str(c/8.4159)),'\n'))
+output4.writelines((header.replace("NC" ,"").replace("C" ,"").replace("NO" ,str(len(temp)/3)).replace("NH" , str(2*len(temp)/3)),'\n'))
 
 for i in range(len(coords)):
     grab = [coords[i][1],coords[i][2],coords[i][3],coords[i][4]]
     if fixedposcar == 0:
         tail = 'F     F     F\n'
-        if i+1 <= 27:
+        if i+1 <= NPt:
             print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
             print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
             print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
             print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-        elif ( i+1  < 34 or  i+1  > N-(N-27-3-NO-NHW)):
+        elif ( i+1  <= NPt+NC+NOS or  i+1  > N-(N-NPt-NC-NO-NHW)):
             tail = 'T     T     T\n'
             print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
             print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
@@ -342,7 +333,7 @@ for i in range(len(coords)):
             print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
             print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
 
-        elif ( i+1  < 34 or  i+1  > N-(N-27-3-NO-NHW)):
+        elif ( i+1  <= NPt+NC+NOS or  i+1  > N-(N-NPt-NC-NO-NHW)):
             print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
             print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
 
