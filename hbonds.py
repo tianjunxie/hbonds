@@ -5,8 +5,8 @@ import os
 
 # from decimal import Decimal
 # from array import *
-temp = lw = la = output = xp = xn = yp = yn = coords = []
-h1 = h2 = o1 = o2 = link = [None] * 10000
+temp = lwat = lads = output = xp = xn = yp = yn = coords = []
+h1 = h2 = o1 = o2 =  link = [None] * 10000
 A  = 0
 flag = nlines = 0
 
@@ -31,22 +31,21 @@ def init():
         x.append(words)
     file.close()
     x = [a for a in x if a != None]
-    dx = x[0][2]
-    dy = x[0][3]
     dz = x[0][4]
     for i in range(len(x)):
         x[i][0] = int(x[i][0])
-        x[i][1] = int(x[i][1])
-        x[i][2] = x[i][2] - dx
-        x[i][3] = x[i][3] - dy
-        x[i][4] = x[i][4] - dz
+        x[i][1] = int(x[i][1])      
+        if x[i][4] < dz:
+            x[i][4] = 1-(x[i][4]+dz)
+        else:
+            x[i][4] = x[i][4] - dz
     return (x)
 
 def ang(d1,d2,d3):# Note: square of the distances
     return degrees( acos((d1 + d2 - d3)/(2.0 * sqrt(d1) * sqrt(d2))) )
 
 def find(y,c):
-    x =grab= grabxp = grabxn = grabyp = grabyn = grabxpyp = grabxnyn = grabxnyp = grabxpyn = [None] * 50000
+    x = grab= grabxp = grabxn = grabyp = grabyn = grabxpyp = grabxnyn = grabxnyp = grabxpyn = [None] * 50000
     for i in range(len(c)):
         grab = ((c[i][1],c[i][2],c[i][3],c[i][4],c[i][0]))
         grabxp = ((c[i][1],c[i][2]+1,c[i][3],c[i][4],c[i][0]))
@@ -68,9 +67,12 @@ def find(y,c):
                 x[9*i+6]=grabxpyn # +x-y
                 x[9*i+7]=grabxnyp # -x+y
                 x[9*i+8]=grabxnyn # -x-y
-    file.close()
+    x = filter(None, x)
     return(x)
 
+def ss(e):
+    if len(e)==2 and e[0]<=e[1]:return e[1]
+    return ss(e[:-1]) if e[0]<=e[-1]>=e[1] else ss([e[-1]]+e[:-1])
 ###############################################   Manual input starts here               ################################################
 # rHS = string.split((raw_input('\natom ID of H_adsorbate : ')))                                                         ################                                                                                                         
 # rOS = string.split((raw_input('atom ID of O_adsorbate : ')))                                                           ################                                                                                                       
@@ -93,7 +95,7 @@ rOS = [6,7]                                                                     
 rHW = [9]                                                                                                                ################                                                  
 rOW = [8]                                                                                                                ################                                                  
                                                                                                                          ################                                         
-fixedposcar = 0   # 0 all fixed, 1 not all fixed                                                                                                       ################                                                        
+fixedposcar = 0   # 1 all fixed, 0 not all fixed                                                                                                       ################                                                        
                                                                                                                          ################
 ###############################################   Manual input ends here               ##################################################
 file = open(sys.argv[1],'r')
@@ -142,11 +144,11 @@ cosgamma = xy/b
 V = sqrt((1-cosalpha*cosalpha-cosbeta*cosbeta-cosgamma*cosgamma+2*cosalpha*cosbeta*cosgamma))*a*b*c
 # print xlo, xhi, ylo, yhi,zlo, zhi, xy, xz, yz
 print '--------------------------------------------------------------------------------------------------------'
-print "lattice info: ", a, b, c, degrees(acos(cosalpha)), degrees(acos(cosbeta)), degrees(acos(cosgamma)), V
-bx = b*cosgamma
-cx = c*cosbeta
-by = b*sqrt(1-cosgamma*cosgamma)
-cy = c*(cosalpha-cosbeta*cosgamma)/sqrt(1-cosgamma*cosgamma)
+print "lattice info: ", round(a,6), round(b,6), round(c,6), round(degrees(acos(cosalpha)),1), round(degrees(acos(cosbeta)),1), round(degrees(acos(cosgamma)),1), round(V,4)
+bx = b * cosgamma
+cx = c * cosbeta
+by = b * sqrt(1-cosgamma * cosgamma)
+cy = c * (cosalpha-cosbeta * cosgamma)/sqrt(1-cosgamma * cosgamma)
 file.close
 # ########################################################################################################################################################
 
@@ -156,13 +158,7 @@ h1 = find (rHS,coords)
 h2 = find (rHW,coords)
 o1 = find (rOS,coords)
 o2 = find (rOW,coords)
-C = find (rC,coords)
-
-h1 = [x for x in h1 if x != None]
-h2 = [x for x in h2 if x != None]
-o1 = [x for x in o1 if x != None]
-o2 = [x for x in o2 if x != None]
-C = [x for x in C if x != None]
+C= find (rC,coords) # find atoms with designated type numbers
 
 NH = (len(h1)+len(h2))/9
 NHW = len(h2)/9
@@ -173,41 +169,50 @@ NOS = NO - NOW
 NC = len(C)/9
 NPt=N-NC-NO-NH
 
+lads_o = lwat_o = [None] * 10000
 for i in range(len(h1)):
     for j in range(len(o1)):
         d = dist(h1[i],o1[j])
         if d <= 1.2:
-            temp.append((o1[j],h1[i],round(d,8)))
-temp=list(set(temp))
-la=sorted(temp)
+            temp.append( (o1[j], h1[i], round(sqrt(d),8)) ) # pbc link for OH in adsorbate: o1(xyz),h1(xyz),do1h1
+lads=list(set(temp))
+lads.sort(key=lambda x: x[0][4]) # sort by O indices
+temp = []
+for x in lads: temp.append((x[0][4],x[1][4]))
+lads_o=list(set(temp))
+lads_o = filter(None, lads_o) # original link for for outputting, OH pairs of adsorbate
+# for x in lads_o: print x
+
 temp = []
 for i in range(len(h2)):
     for j in range(len(o2)):
         d = dist(h2[i],o2[j])
         if d <= 1.2:
-            temp.append((o2[j],h2[i],round(d,8)))
-temp=list(set(temp))
-lw=sorted(temp)
-# for i in range(len(la)):
-#     print la[i]
-# print len(la)
-# for i in range(len(lw)):
-#     print lw[i]
-# print len(lw)
+            temp.append( (o2[j], h2[i], round(sqrt(d),8)) ) #link for OH in water: o2(xyz),h2(xyz),do2h2
+lwat=list(set(temp))
+lwat.sort(key=lambda x: x[0][4]) # sort by O indices
+temp = []
+for x in lwat: temp.append((x[0][4],x[1][4]))
+lwat_o=list(set(temp))
+lwat_o.sort(key=lambda x: x[0]) # original link for for outputting, OH pairs of water
+# print len(lwat_o)
+# for x in lwat_o: print x
 
 #########################################################################################################################################################
 print '--------------------------------------------------------------------------------------------------------'
-if fixedposcar == 0:
+if fixedposcar == 1:
     print('export ALL FIXED POSCAR coordinates')
 else:
     print('export PARTIAL RELAXED POSCAR coordinates')
-####################   To change, fixedposcar = 1    will give    all fixed flags '
-#                                 fixedposcar = 0    will give    partailly fixed flags '
+#########################################################################################################################################################
+####################   To change, fixedposcar = 1    will give    all fixed flags '          ############################################################
+# ##################              fixedposcar = 0    will give    partailly fixed flags '    ############################################################
+#########################################################################################################################################################
 print('Found Total Number of atoms: %d' % N)
 print 'Pt C O H'
 print NPt, NC, NO, NH
 print '________________________________________________________________________________________________________'
-print('O_acceptor      O_donar        O-O_Dist              A-H_Dist         AHD_Angle             ADH_Angle ')
+print('O_acceptor         O_donar        O-O_Dist            A-H_Dist           AHD_Angle            ADH_Angle ')
 print '________________________________________________________________________________________________________'
 fo1 = fo2 =temp = []
 
@@ -248,11 +253,11 @@ if link!=[]:
 i=0
 for x in fo1:
     if fo1.count(x)==1:
-        print '   ', temp[i][0], "    I      ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
+        print '   ', "%.3d"%temp[i][0], "    I      ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
     if fo1.count(x)==2:
-        print '   ', temp[i][0], "    II     ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
+        print '   ', "%.3d"%temp[i][0], "    II     ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
     if fo1.count(x)==3:
-        print '   ', temp[i][0], "    III    ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]        
+        print '   ', "%.3d"%temp[i][0], "    III    ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]        
     i=i+1   
 
 if i!= len(temp):
@@ -265,13 +270,13 @@ print 'Total hydrogen bond(s) btw water and the adsorbate:  %d\n' % (i)
 
 
 temp=[]
-for i in range(len(lw)):
+for i in range(len(lwat)):
     for j in range(len(link)):
-        if lw[i][0][4] == link[j][0] or lw[i][0][4] == link[j][1]:
-            temp.append(lw[i][0][4])
-            temp.append(lw[i][1][4])
+        if lwat[i][0][4] == link[j][0] or lwat[i][0][4] == link[j][1]:
+            temp.append(lwat[i][0][4])
+            temp.append(lwat[i][1][4])
 temp=list(set(temp))
-
+# for x in temp: print x
 # POSCAR outputting
 
 header = """                             
@@ -301,52 +306,49 @@ output4 = open('POSCAR_impbg', 'w')
 output4.writelines((header.replace("NC" ,"").replace("C" ,"").replace("NO" ,str(len(temp)/3)).replace("NH" , str(2*len(temp)/3)),'\n'))
 
 for i in range(len(coords)):
-    grab = [coords[i][1],coords[i][2],coords[i][3],coords[i][4]]
+    grab = [coords[i][0],coords[i][2],coords[i][3],coords[i][4]]
     if fixedposcar == 0:
-        tail = 'F     F     F\n'
+        tailF = 'F     F     F\n'
+        tailT = 'T     T     T\n'
         if i+1 <= NPt:
-            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-            print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-            print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
+            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+            print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+            print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
         elif ( i+1  <= NPt+NC+NOS or  i+1  > N-(N-NPt-NC-NO-NHW)):
-            tail = 'T     T     T\n'
-            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
+            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
+            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
         else:
-            if ((i+1) in temp):
-                tail = 'T     T     T\n'
-                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-                print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-                print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
+            if (grab[0] in temp):
+                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
+                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
+                print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
+                print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
             else:
-                tail = 'F     F     F\n'
-                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
+                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
 
     elif fixedposcar == 1:
-        tail = 'F     F     F\n'
-        if  i+1  <= 27:
-            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-            print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-            print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
+        if  i+1  <= NPt:
+            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+            print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+            print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
 
         elif ( i+1  <= NPt+NC+NOS or  i+1  > N-(N-NPt-NC-NO-NHW)):
-            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
+            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
 
         else:
-            if ((i+1) in temp):
-                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-                print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-                print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
+            if (grab[0] in temp):
+                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+                print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+                print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
 
             else:
-                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
-                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tail,
+                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
 
 output1.close
 output2.close

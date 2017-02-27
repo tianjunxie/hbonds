@@ -1,8 +1,9 @@
 # hbonds
-Based on the honds currently have,
-want to develop the code also capable of
-generating POSCAR with both explicit water solvation
-and implicit water solvation. 
+The code can count the hbond based on geometric criteria (customizable),
+Meantime generating POSCARs for VASP runs with both full water solvation
+and partial preserved solvation(non-hbonded removed). 
+
+02/27/17 Update: Added support for TI4P water model support, also support CxHyOz system on Pt, xyz>0.
 
 06/27 Update:   Added the function to calculate the dipole moment for each hydrogen bond found.
 
@@ -26,23 +27,19 @@ and implicit water solvation.
 				or,
 				simply all fixed coordinates for single point energy calc.
 
-NOTE: for **************   EXPORTING   ************* POSCAR files
 *****************************IMPORTANT***********************************
-
-For now the code can EXPORT C3HxOx related POSCARS.
-   i.e. No correct number of C or O atoms will show up
-        in the POSCAR files IF the system is not for C3HxO3.
 
 NOTE: for **************   COUNTING   ************* lammps frames
  Turned off manual atom type input for speed
    (Can turn it back on when needed).
 
    Default settings:
-rHS = ['10','11']
-rOS = ['6']
-rHW = ['9']
-rOW = ['8']
+
+rC = [2,3,4,5]         
+rHS = [10,11]
+rOS = [6,7]  
+rHW = [9]
+rOW = [8]  
 
 Future improvement,
 1. Update neighbor list to fasten hbonding counting.
-2. Reduce input by reading the data file for automated identification of atom types.
