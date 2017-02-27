@@ -95,7 +95,7 @@ rOS = [6,7]                                                                     
 rHW = [9]                                                                                                                ################                                                  
 rOW = [8]                                                                                                                ################                                                  
                                                                                                                          ################                                         
-fixedposcar = 0   # 1 all fixed, 0 not all fixed                                                                                                       ################                                                        
+fixedposcar = 1   # 1 all fixed, 0 not all fixed                                                                                                       ################                                                        
                                                                                                                          ################
 ###############################################   Manual input ends here               ##################################################
 file = open(sys.argv[1],'r')
@@ -307,9 +307,9 @@ output4.writelines((header.replace("NC" ,"").replace("C" ,"").replace("NO" ,str(
 
 for i in range(len(coords)):
     grab = [coords[i][0],coords[i][2],coords[i][3],coords[i][4]]
+    tailF = 'F     F     F\n'
+    tailT = 'T     T     T\n'
     if fixedposcar == 0:
-        tailF = 'F     F     F\n'
-        tailT = 'T     T     T\n'
         if i+1 <= NPt:
             print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
             print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,

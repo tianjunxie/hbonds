@@ -41,5 +41,7 @@ rOS = [6,7]
 rHW = [9]
 rOW = [8]  
 
+fixedposcar = 1
+
 Future improvement,
 1. Update neighbor list to fasten hbonding counting.
