@@ -35,10 +35,11 @@ def init():
     for i in range(len(x)):
         x[i][0] = int(x[i][0])
         x[i][1] = int(x[i][1])      
-        if x[i][4] < dz:
-            x[i][4] = 1-(x[i][4]+dz)
-        else:
-            x[i][4] = x[i][4] - dz
+        # if x[i][4] < dz:
+        #     x[i][4] = 1-(x[i][4]+dz)
+        # else:
+        #     x[i][4] = x[i][4] - dz
+        x[i][4] = x[i][4] - dz    
     return (x)
 
 def ang(d1,d2,d3):# Note: square of the distances
