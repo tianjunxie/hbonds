@@ -228,18 +228,18 @@ for i in range(len(o1)):
                     A1 = ang( do1o2 , do1h2, do2h2)
                     A2 = ang( do2h2 , do1h2, do1o2)
                     # if A2>=120:  
-                    if A1<=30 and A2>=120:# and do1h2<=6.25:                     
+                    if A1<=30 and A2>=120 and do1h2<=6.25:                     
                         link.append((o1[i][4],o2[j][4]))
                         temp.append((o1[i][4] , o2[j][4] , round(sqrt(do1o2),8), round(sqrt(do1h2),8) , round(A2,8), round(A1,8)  ))
            for l in range(len(h1)):
                do1h1 = dist(o1[i],h1[l])
-               if do1h1<=1.3:
+               if do1h1<=1.3 and (o1[i][4],o2[j][4]) not in link:
                     do2h1 = dist(o2[j] , h1[l])
                     # print do1h1,do1o2,do2h1
                     A1 = ang( do1o2 , do2h1, do1h1 )
                     A2 = ang( do1h1 ,do2h1, do1o2 )
                     # if  A2>=120:
-                    if  A1<=30 and A2>=120:# and do2h1<=6.25:
+                    if  A1<=30 and A2>=120 and do2h1<=6.25:
                         link.append((o2[j][4], o1[i][4]))
                         temp.append(( o2[j][4], o1[i][4] ,  round(sqrt(do1o2),8) , round(sqrt(do2h1),8), round(A2,8), round(A1,8)  ))
 
@@ -252,22 +252,18 @@ link = [x for x in link if x != None]
 if link!=[]:
     fo1, fo2 = zip(*link)
 i=0
-for x in fo1:
-    if fo1.count(x)==1:
+for i in range(len(fo1)):
+    if fo1.count(fo1[i])==1 and fo2.count(fo2[i])==1:
         print '   ', "%.3d"%temp[i][0], "    I      ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
-    if fo1.count(x)==2:
+    if fo1.count(fo1[i])==2 or fo2.count(fo2[i])==2:
         print '   ', "%.3d"%temp[i][0], "    II     ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
-    if fo1.count(x)==3:
+    if fo1.count(fo1[i])==3 or fo2.count(fo2[i])==3:
         print '   ', "%.3d"%temp[i][0], "    III    ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]        
-    i=i+1   
-
-if i!= len(temp):
-    print "warning"
 
 # for i in range(len(temp)):
 #     print '   ', temp[i][0], "          ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f         " %temp[i][3]," %.8f" %temp[i][4],'  ', "    %.8f   " %temp[i][5]
 print '________________________________________________________________________________________________________'
-print 'Total hydrogen bond(s) btw water and the adsorbate:  %d\n' % (i)
+print 'Total hydrogen bond(s) btw water and the adsorbate:  %d\n' % (i+1)
 
 
 temp=[]
