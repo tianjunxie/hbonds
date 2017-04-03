@@ -251,7 +251,8 @@ link=sorted(link)
 link = [x for x in link if x != None]
 if link!=[]:
     fo1, fo2 = zip(*link)
-i=0
+f1=open('hbonds.log', 'w+')
+f1.write(' , '.join('%s-%s' % x for x in link))
 for i in range(len(fo1)):
     if fo1.count(fo1[i])==1 and fo2.count(fo2[i])==1:
         print '   ', "%.3d"%temp[i][0], "    I      ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
@@ -263,7 +264,7 @@ for i in range(len(fo1)):
 # for i in range(len(temp)):
 #     print '   ', temp[i][0], "          ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f         " %temp[i][3]," %.8f" %temp[i][4],'  ', "    %.8f   " %temp[i][5]
 print '________________________________________________________________________________________________________'
-print 'Total hydrogen bond(s) btw water and the adsorbate:  %d\n' % (i+1)
+print 'Total hydrogen bond(s) btw water and the adsorbate:  %d\n' % (len(link))
 
 
 temp=[]
