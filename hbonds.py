@@ -97,7 +97,7 @@ rHW = [9]                                                                       
 rOW = [8]                                                                                                                ################                                                  
                                                                                                                          ################                                         
 fixedposcar = 1   # 1 all fixed, 0 not all fixed                                                                                                       ################                                                        
-                                                                                                                         ################
+                                                                                                                      ################
 ###############################################   Manual input ends here               ##################################################
 file = open(sys.argv[1],'r')
 for i in range(3):
@@ -145,14 +145,14 @@ cosgamma = xy/b
 V = sqrt((1-cosalpha*cosalpha-cosbeta*cosbeta-cosgamma*cosgamma+2*cosalpha*cosbeta*cosgamma))*a*b*c
 # print xlo, xhi, ylo, yhi,zlo, zhi, xy, xz, yz
 print '--------------------------------------------------------------------------------------------------------'
-print "lattice info: ", round(a,6), round(b,6), round(c,6), round(degrees(acos(cosalpha)),1), round(degrees(acos(cosbeta)),1), round(degrees(acos(cosgamma)),1), round(V,4)
+print 'lattice info: ', round(a,6), round(b,6), round(c,6), round(degrees(acos(cosalpha)),1), round(degrees(acos(cosbeta)),1), round(degrees(acos(cosgamma)),1), round(V,4)
 bx = b * cosgamma
 cx = c * cosbeta
 by = b * sqrt(1-cosgamma * cosgamma)
 cy = c * (cosalpha-cosbeta * cosgamma)/sqrt(1-cosgamma * cosgamma)
 file.close
 # ########################################################################################################################################################
-
+  
 coords = init() #reads in atoms coords
 
 h1 = find (rHS,coords)
@@ -202,19 +202,19 @@ lwat_o.sort(key=lambda x: x[0]) # original link for for outputting, OH pairs of 
 #########################################################################################################################################################
 print '--------------------------------------------------------------------------------------------------------'
 if fixedposcar == 1:
-    print('export ALL FIXED POSCAR coordinates')
+    print('\x1b[6;30;42m'+'export ALL FIXED POSCAR coordinates'+'\x1b[0m')
 else:
-    print('export PARTIAL RELAXED POSCAR coordinates')
+    print('\x1b[6;30;42m'+'export PARTIAL RELAXED POSCAR coordinates'+'\x1b[0m')
 #########################################################################################################################################################
 ####################   To change, fixedposcar = 1    will give    all fixed flags '          ############################################################
 # ##################              fixedposcar = 0    will give    partailly fixed flags '    ############################################################
 #########################################################################################################################################################
-print('Found Total Number of atoms: %d' % N)
+print("Found Total Number of atoms:"+"\033[95m {}\033[00m".format((' %d' % N  )))
 print 'Pt C O H'
 print NPt, NC, NO, NH
-print '________________________________________________________________________________________________________'
-print('O_acceptor         O_donar        O-O_Dist            A-H_Dist           AHD_Angle            ADH_Angle ')
-print '________________________________________________________________________________________________________'
+print '_________________________________________________________________________________________________________________________________________'
+print('O_acceptor         O_donar        O-O_Dist            A-H_Dist           AHD_Angle            ADH_Angle            Ow_coord ')
+print '_________________________________________________________________________________________________________________________________________'
 fo1 = fo2 =temp = []
 
 for i in range(len(o1)):
@@ -223,26 +223,25 @@ for i in range(len(o1)):
         if do1o2 <= float(12.25):
            for l in range(len(h2)):
                do2h2 = dist(o2[j],h2[l])
-               if do2h2<=1.3:
+               if do2h2<=1.3 and (o1[i][4],o2[j][4]) not in link:
                     do1h2 = dist(o1[i] , h2[l])
-                    A1 = ang( do1o2 , do1h2, do2h2)
-                    A2 = ang( do2h2 , do1h2, do1o2)
+                    A1 = ang( do1o2 , do1h2, do2h2) # angle of o2h2
+                    A2 = ang( do2h2 , do1h2, do1o2) # angle of o1o2
                     # if A2>=120:  
                     if A1<=30 and A2>=120 and do1h2<=6.25:                     
                         link.append((o1[i][4],o2[j][4]))
-                        temp.append((o1[i][4] , o2[j][4] , round(sqrt(do1o2),8), round(sqrt(do1h2),8) , round(A2,8), round(A1,8)  ))
+                        temp.append((o1[i][4] , o2[j][4] , round(sqrt(do1o2),8), round(sqrt(do1h2),8) , round(A2,8), round(A1,8), o2[i][1],o2[i][2],o2[i][3]   ))
            for l in range(len(h1)):
                do1h1 = dist(o1[i],h1[l])
-               if do1h1<=1.3 and (o1[i][4],o2[j][4]) not in link:
+               if do1h1<=1.3 and (o2[j][4], o1[i][4]) not in link:
                     do2h1 = dist(o2[j] , h1[l])
                     # print do1h1,do1o2,do2h1
-                    A1 = ang( do1o2 , do2h1, do1h1 )
-                    A2 = ang( do1h1 ,do2h1, do1o2 )
+                    A1 = ang( do1o2 , do1h1, do2h1 )# angle of o2h1
+                    A2 = ang( do1h1 ,do2h1, do1o2 ) # angle of o1o2
                     # if  A2>=120:
                     if  A1<=30 and A2>=120 and do2h1<=6.25:
                         link.append((o2[j][4], o1[i][4]))
-                        temp.append(( o2[j][4], o1[i][4] ,  round(sqrt(do1o2),8) , round(sqrt(do2h1),8), round(A2,8), round(A1,8)  ))
-
+                        temp.append(( o2[j][4], o1[i][4] ,  round(sqrt(do1o2),8) , round(sqrt(do2h1),8), round(A2,8), round(A1,8), o2[i][1],o2[i][2],o2[i][3]  ))
 temp=list(set(temp))
 temp=sorted(temp)
 temp = [x for x in temp if x != None]
@@ -255,15 +254,15 @@ f1=open('hbonds.log', 'w+')
 f1.write(' , '.join('%s-%s' % x for x in link))
 for i in range(len(fo1)):
     if fo1.count(fo1[i])==1 and fo2.count(fo2[i])==1:
-        print '   ', "%.3d"%temp[i][0], "    I      ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
+        print '   ', "%.3d"%temp[i][0], "    I      ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f     " %temp[i][5] , "%.4f," %temp[i][6], "%.4f," %temp[i][7], "%.4f" %temp[i][8]
     if fo1.count(fo1[i])==2 or fo2.count(fo2[i])==2:
-        print '   ', "%.3d"%temp[i][0], "    II     ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]
+        print '   ', "%.3d"%temp[i][0], "    II     ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f     " %temp[i][5] , "%.4f," %temp[i][6], "%.4f," %temp[i][7], "%.4f" %temp[i][8]
     if fo1.count(fo1[i])==3 or fo2.count(fo2[i])==3:
-        print '   ', "%.3d"%temp[i][0], "    III    ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f      " %temp[i][5]        
+        print '   ', "%.3d"%temp[i][0], "    III    ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f     " %temp[i][5] , "%.4f," %temp[i][6], "%.4f," %temp[i][7], "%.4f" %temp[i][8]      
 
 # for i in range(len(temp)):
 #     print '   ', temp[i][0], "          ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f         " %temp[i][3]," %.8f" %temp[i][4],'  ', "    %.8f   " %temp[i][5]
-print '________________________________________________________________________________________________________'
+print '_________________________________________________________________________________________________________________________________________'
 print 'Total hydrogen bond(s) btw water and the adsorbate:  %d\n' % (len(link))
 
 
