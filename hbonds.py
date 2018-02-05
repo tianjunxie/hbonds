@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import string,sys
+import numpy as np
 from math import *
 import os
-
+import timeit
 # from decimal import Decimal
 # from array import *
 temp = lwat = lads = output = xp = xn = yp = yn = coords = []
@@ -74,31 +75,46 @@ def find(y,c):
 def ss(e):
     if len(e)==2 and e[0]<=e[1]:return e[1]
     return ss(e[:-1]) if e[0]<=e[-1]>=e[1] else ss([e[-1]]+e[:-1])
+
+
+# if element is found it returns index of element else returns None
+def find_element_in_list(element, list_element):
+    count = 0
+    out = [None]*2
+    for i in range(len(list_element)):
+        if list_element[i][0] == element:
+            out[count] = list_element[i][1]
+            count = count +1
+    if count ==2:
+        return out
 ###############################################   Manual input starts here               ################################################
 # rHS = string.split((raw_input('\natom ID of H_adsorbate : ')))                                                         ################                                                                                                         
 # rOS = string.split((raw_input('atom ID of O_adsorbate : ')))                                                           ################                                                                                                       
 # rHW = string.split((raw_input('atom ID of H_water     : ')))                                                           ################                                                                                                       
 # rOW = string.split((raw_input('atom ID of O_water     : ')))                                                           ################                                                                                                       
                                                                                                                          ################                                         
-# rHS = []                                                                                                               ################                                                   
-# rOS = ['3']                                                                                                            ################                                                      
-# rHW = ['5']                                                                                                            ################                                                      
-# rOW = ['4']                                                                                                            ################                                                      
-                                                                                                                         ################                                         
-# rHS = [8,9]                                                                                                            ################                                                      
-# rOS = [4,5]                                                                                                            ################                                                      
-# rHW = [7]                                                                                                              ################                                                    
-# rOW = [6]                                                                                                              ################                                                    
-# if os.path.isfile("types"):                                                                                            ################                                                                      
+                                                                                                                    ################                                                                      
 rC = [2,3,4,5]                                                                                                           ################                                                       
-rHS = [10,11]                                                                                                            ################                                                      
-rOS = [6,7]                                                                                                              ################                                                    
+rHS = [10,11,13]                                                                                                            ################                                                      
+rOS = [6,7,12]                                                                                                              ################                                                    
 rHW = [9]                                                                                                                ################                                                  
 rOW = [8]                                                                                                                ################                                                  
-                                                                                                                         ################                                         
-fixedposcar = 1   # 1 all fixed, 0 not all fixed                                                                                                       ################                                                        
-                                                                                                                      ################
+#rC =   [6,7]                                                                                                          ################                                                       
+#rHS = [10,11]                                                                                                            ################                                                      
+#rOS = [2,3,4,5]                                                                                                             ################                                                    
+#rHW = [9]                                                                                                                ################                                                  
+#rOW = [8]    
+#                                                                                                                          ################                                         
+################################              SET your value HERE                                       ################                                                        
+fixedposcar = 0   # 1 all fixed, 0 not all fixed
+
+if fixedposcar == 1:
+    tail = 'F     F     F'
+else:
+    tail = 'T     T     T'                                                                                                                      ################
 ###############################################   Manual input ends here               ##################################################
+start = timeit.timeit()
+########################################################################################################################
 file = open(sys.argv[1],'r')
 for i in range(3):
     file.readline() # skip first 3 lines
@@ -170,38 +186,30 @@ NOS = NO - NOW
 NC = len(C)/9
 NPt=N-NC-NO-NH
 
-lads_o = lwat_o = [None] * 10000
 for i in range(len(h1)):
     for j in range(len(o1)):
         d = dist(h1[i],o1[j])
         if d <= 1.2:
-            temp.append( (o1[j], h1[i], round(sqrt(d),8)) ) # pbc link for OH in adsorbate: o1(xyz),h1(xyz),do1h1
-lads=list(set(temp))
-lads.sort(key=lambda x: x[0][4]) # sort by O indices
-temp = []
-for x in lads: temp.append((x[0][4],x[1][4]))
-lads_o=list(set(temp))
-lads_o = filter(None, lads_o) # original link for for outputting, OH pairs of adsorbate
-# for x in lads_o: print x
+            temp.append( (o1[j][4], o1[j][1] ,o1[j][2] ,o1[j][3] , h1[i][4], h1[i][1] ,h1[i][2] ,h1[i][3] , d)) # pbc link for OH in adsorbate: o1(xyz),h1(xyz),do1h1
+lads = temp # find all the OH pairs in adsorbates
 
 temp = []
+bond = []
 for i in range(len(h2)):
     for j in range(len(o2)):
         d = dist(h2[i],o2[j])
         if d <= 1.2:
-            temp.append( (o2[j], h2[i], round(sqrt(d),8)) ) #link for OH in water: o2(xyz),h2(xyz),do2h2
-lwat=list(set(temp))
-lwat.sort(key=lambda x: x[0][4]) # sort by O indices
-temp = []
-for x in lwat: temp.append((x[0][4],x[1][4]))
-lwat_o=list(set(temp))
-lwat_o.sort(key=lambda x: x[0]) # original link for for outputting, OH pairs of water
-# print len(lwat_o)
-# for x in lwat_o: print x
-
+            temp.append( (o2[j][4], o2[j][1] ,o2[j][2] ,o2[j][3] , h2[i][4], h2[i][1] ,h2[i][2] ,h2[i][3] , d))  #link for OH in water: o2(xyz),h2(xyz),do2h2
+            bond.append( (o2[j][4], h2[i][4]))
+lwat = temp # find all the OH pairs in water
+bond = set(bond)
+bond = list(bond)
+bond.sort()
+myarray = np.asarray(bond) ## this array contains the all the water OH links
+# find_element_in_list(55, myarray)
 #########################################################################################################################################################
 print '--------------------------------------------------------------------------------------------------------'
-if fixedposcar == 1:
+if fixedposcar == 0:
     print('\x1b[6;30;42m'+'export ALL FIXED POSCAR coordinates'+'\x1b[0m')
 else:
     print('\x1b[6;30;42m'+'export PARTIAL RELAXED POSCAR coordinates'+'\x1b[0m')
@@ -217,39 +225,73 @@ print('O_acceptor         O_donar        O-O_Dist            A-H_Dist           
 print '_________________________________________________________________________________________________________________________________________'
 fo1 = fo2 =temp = []
 
-for i in range(len(o1)):
-   for j in range(len(o2)):
-        do1o2 = dist(o1[i] , o2[j])  
-        if do1o2 <= float(12.25):
-           for l in range(len(h2)):
-               do2h2 = dist(o2[j],h2[l])
-               if do2h2<=1.3 and (o1[i][4],o2[j][4]) not in link:
-                    do1h2 = dist(o1[i] , h2[l])
-                    A1 = ang( do1o2 , do1h2, do2h2) # angle of o2h2
-                    A2 = ang( do2h2 , do1h2, do1o2) # angle of o1o2
-                    # if A2>=120:  
-                    if A1<=30 and A2>=120 and do1h2<=6.25:                     
-                        link.append((o1[i][4],o2[j][4]))
-                        temp.append((o1[i][4] , o2[j][4] , round(sqrt(do1o2),8), round(sqrt(do1h2),8) , round(A2,8), round(A1,8), o2[i][1],o2[i][2],o2[i][3]   ))
-           for l in range(len(h1)):
-               do1h1 = dist(o1[i],h1[l])
-               if do1h1<=1.3 and (o2[j][4], o1[i][4]) not in link:
-                    do2h1 = dist(o2[j] , h1[l])
-                    # print do1h1,do1o2,do2h1
-                    A1 = ang( do1o2 , do1h1, do2h1 )# angle of o2h1
-                    A2 = ang( do1h1 ,do2h1, do1o2 ) # angle of o1o2
-                    # if  A2>=120:
-                    if  A1<=30 and A2>=120 and do2h1<=6.25:
-                        link.append((o2[j][4], o1[i][4]))
-                        temp.append(( o2[j][4], o1[i][4] ,  round(sqrt(do1o2),8) , round(sqrt(do2h1),8), round(A2,8), round(A1,8), o2[i][1],o2[i][2],o2[i][3]  ))
+## new working loop
+for i in range(len(lads)):
+    for j in range(len(lwat)):
+        do1o2 = dist( lads[i] , lwat[j] )
+        h2_t = lwat[j][4:8]
+        h1_t = lads[i][4:8]
+        do2h2 = lwat[j][8]
+        do1h1 = lads[i][8]
+        do1h2 = dist( lads[i][:4], h2_t )
+        do2h1 = dist( lwat[j][:4], h1_t )
+        if do1o2 <= float(12.25) and (lads[i][0],lwat[j][0]) not in link and do1h2 <= 6.25:
+            A1 = ang( do1o2 , do1h2, do2h2)# angle of o2h2
+            A2 = ang( do2h2 , do1h2, do1o2)# angle of o1o2    
+            if A1 <= 30 and A2 >= 120:
+                link.append((lads[i][0],lwat[j][0])) 
+                temp.append((lads[i][0] , lwat[j][0] , round(sqrt(do1o2),8), round(sqrt(do1h2),8) , round(A2,8), round(A1,8), lwat[j][1],lwat[j][2],lwat[j][3]  ))
+        if do1o2 <= float(12.25) and (lwat[j][0], lads[i][0]) not in link and do2h1<=6.25:
+            A1 = ang( do1o2 , do1h1, do2h1 )# angle of o2h1
+            A2 = ang( do1h1 ,do2h1, do1o2 ) # angle of o1o2
+            if  A1 <= 30 and A2 >= 120:
+                link.append((lwat[j][0], lads[i][0]))
+                temp.append((lwat[j][0], lads[i][0] ,  round(sqrt(do1o2),8) , round(sqrt(do2h1),8), round(A2,8), round(A1,8), lwat[j][1],lwat[j][2],lwat[j][3]  ))
+
+## legacy loop
+# for i in range(len(o1)):
+#   for j in range(len(o2)):
+#        do1o2 = dist(o1[i] , o2[j])  
+#        if do1o2 <= float(12.25):
+#           #print i,j
+#           for l in range(len(h2)):
+#               do2h2 = dist(o2[j],h2[l])
+#               if do2h2<=1.3 and (o1[i][4],o2[j][4]) not in link:
+#                    do1h2 = dist(o1[i] , h2[l])
+#                    A1 = ang( do1o2 , do1h2, do2h2) # angle of o2h2
+#                    A2 = ang( do2h2 , do1h2, do1o2) # angle of o1o2
+#                    # if A2>=120:  
+#                    if A1<=30 and A2>=120 and do1h2<=6.25:                     
+#                        link.append((o1[i][4],o2[j][4]))
+#                        temp.append((o1[i][4] , o2[j][4] , round(sqrt(do1o2),8), round(sqrt(do1h2),8) , round(A2,8), round(A1,8), o2[i][1],o2[i][2],o2[i][3]   ))
+#           for l in range(len(h1)):
+#               do1h1 = dist(o1[i],h1[l])
+#               if do1h1<=1.3 and (o2[j][4], o1[i][4]) not in link:
+#                    do2h1 = dist(o2[j] , h1[l])
+#                    # print do1h1,do1o2,do2h1
+#                    A1 = ang( do1o2 , do1h1, do2h1 )# angle of o2h1
+#                    A2 = ang( do1h1 ,do2h1, do1o2 ) # angle of o1o2
+#                    # if  A2>=120:
+#                    if  A1<=30 and A2>=120 and do2h1<=6.25:
+#                        link.append((o2[j][4], o1[i][4]))
+#                        temp.append(( o2[j][4], o1[i][4] ,  round(sqrt(do1o2),8) , round(sqrt(do2h1),8), round(A2,8), round(A1,8), o2[i][1],o2[i][2],o2[i][3]  ))
+
 temp=list(set(temp))
 temp=sorted(temp)
 temp = [x for x in temp if x != None]
 link=list((set(link)))
 link=sorted(link)
 link = [x for x in link if x != None]
+fh = []   ## list of hbond related hydrogens
+for i in range(len(link)):
+    fh.append(find_element_in_list(link[i][0], myarray) )
+    fh.append(find_element_in_list(link[i][1], myarray) )
+fh = [x for x in fh if x != None]
+fh = np.asarray(fh)
+#print fh
+#print link
 if link!=[]:
-    fo1, fo2 = zip(*link)
+    fo1, fo2  = zip(*link)  ## list of hbond oxygens
 f1=open('hbonds.log', 'w+')
 f1.write(' , '.join('%s-%s' % x for x in link))
 for i in range(len(fo1)):
@@ -260,22 +302,11 @@ for i in range(len(fo1)):
     if fo1.count(fo1[i])==3 or fo2.count(fo2[i])==3:
         print '   ', "%.3d"%temp[i][0], "    III    ", "%.3d"%temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f      " %temp[i][3]," %.8f" %temp[i][4],'     ', "    %.8f     " %temp[i][5] , "%.4f," %temp[i][6], "%.4f," %temp[i][7], "%.4f" %temp[i][8]      
 
-# for i in range(len(temp)):
-#     print '   ', temp[i][0], "          ", temp[i][1],  "         %.8f    " %temp[i][2], "     %.8f         " %temp[i][3]," %.8f" %temp[i][4],'  ', "    %.8f   " %temp[i][5]
 print '_________________________________________________________________________________________________________________________________________'
 print 'Total hydrogen bond(s) btw water and the adsorbate:  %d\n' % (len(link))
 
 
-temp=[]
-for i in range(len(lwat)):
-    for j in range(len(link)):
-        if lwat[i][0][4] == link[j][0] or lwat[i][0][4] == link[j][1]:
-            temp.append(lwat[i][0][4])
-            temp.append(lwat[i][1][4])
-temp=list(set(temp))
-# for x in temp: print x
-# POSCAR outputting
-
+## POSCAR outputting
 header = """                             
    1.00000000000000000     
      ax                   0.0                      0.0
@@ -288,66 +319,104 @@ Direct"""
 header = header.replace("ax" , '%10s'%str(a)).replace("bx" , '%10s'%str(bx)).replace("cx" , '%10s'%str(cx)).replace("by" , '%10s'%str(by)).replace("cy" , '%10s'%str(cy)).replace("cz" , '%10s'%str(c))
 # lattice vectors seeded into header and use the template thereafter
 header = header.replace("NPt" ,str(NPt))
-# header also has fixed Pt # since it is independent of solvation model variantions
 
 output1 = open('POSCAR', 'w')
 output1.writelines((header.replace("NC" ,str(NC)).replace("NO" ,str(NO)).replace("NH" , str(NH)),'\n'))
-
 output2 = open('POSCAR_expbg', 'w')
 output2.writelines((header.replace("NC" ,"").replace("C" ,"").replace("NO" ,str(NOW)).replace("NH" , str(NHW)),'\n'))
-
 output3 = open('POSCAR_imp', 'w')
-output3.writelines((header.replace("NC" ,str(NC)).replace("NO" ,str(len(temp)/3+NOS)).replace("NH" , str(2*len(temp)/3+NHS)),'\n'))
-
+output3.writelines((header.replace("NC" ,str(NC)).replace("NO" ,str(len(fh)+NOS)).replace("NH" , str(2*len(fh)+NHS)),'\n'))
 output4 = open('POSCAR_impbg', 'w')
-output4.writelines((header.replace("NC" ,"").replace("C" ,"").replace("NO" ,str(len(temp)/3)).replace("NH" , str(2*len(temp)/3)),'\n'))
+output4.writelines((header.replace("NC" ,"").replace("C" ,"").replace("NO" ,str(len(fh))).replace("NH" , str(2*len(fh))),'\n'))
 
-for i in range(len(coords)):
-    grab = [coords[i][0],coords[i][2],coords[i][3],coords[i][4]]
-    tailF = 'F     F     F\n'
-    tailT = 'T     T     T\n'
-    if fixedposcar == 0:
-        if i+1 <= NPt:
-            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-            print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-            print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-        elif ( i+1  <= NPt+NC+NOS or  i+1  > N-(N-NPt-NC-NO-NHW)):
-            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
-            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
-        else:
-            if (grab[0] in temp):
-                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
-                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
-                print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
-                print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
-            else:
-                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+for i in range(NPt):
+    print >> output1, "%.8f    " % coords[i][2], "%.8f    " % coords[i][3] , "%.8f    " % coords[i][4], '        ' , 'F     F     F'
+    print >> output2, "%.8f    " % coords[i][2], "%.8f    " % coords[i][3] , "%.8f    " % coords[i][4], '        ' , 'F     F     F'
+    print >> output3, "%.8f    " % coords[i][2], "%.8f    " % coords[i][3] , "%.8f    " % coords[i][4], '        ' , 'F     F     F'
+    print >> output4, "%.8f    " % coords[i][2], "%.8f    " % coords[i][3] , "%.8f    " % coords[i][4], '        ' , 'F     F     F'
+    
+for i in range(NC):
+    print >> output1, "%.8f    " % C[i*9][1], "%.8f    " % C[i*9][2] , "%.8f    " % C[i*9][3], '        ' , tail
+    print >> output3, "%.8f    " % C[i*9][1], "%.8f    " % C[i*9][2] , "%.8f    " % C[i*9][3], '        ' , tail
+    
+for i in range(len(o1)/9):
+        print >> output1, "%.8f    " % o1[i*9][1], "%.8f    " % o1[i*9][2] , "%.8f    " % o1[i*9][3], '        ' , tail
+        print >> output3, "%.8f    " % o1[i*9][1], "%.8f    " % o1[i*9][2] , "%.8f    " % o1[i*9][3], '        ' , tail
 
-    elif fixedposcar == 1:
-        if  i+1  <= NPt:
-            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-            print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-            print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+for i in range(len(o2)/9):
+    if o2[i*9][4] in fo1 or o2[i*9][4] in fo2:
+        print >> output1, "%.8f    " % o2[i*9][1], "%.8f    " % o2[i*9][2] , "%.8f    " % o2[i*9][3], '        ' , tail
+        print >> output2, "%.8f    " % o2[i*9][1], "%.8f    " % o2[i*9][2] , "%.8f    " % o2[i*9][3], '        ' , tail
+        print >> output3, "%.8f    " % o2[i*9][1], "%.8f    " % o2[i*9][2] , "%.8f    " % o2[i*9][3], '        ' , tail
+        print >> output4, "%.8f    " % o2[i*9][1], "%.8f    " % o2[i*9][2] , "%.8f    " % o2[i*9][3], '        ' , tail    
+    else:
+        print >> output1, "%.8f    " % o2[i*9][1], "%.8f    " % o2[i*9][2] , "%.8f    " % o2[i*9][3], '        ' , 'F     F     F'
+        print >> output2, "%.8f    " % o2[i*9][1], "%.8f    " % o2[i*9][2] , "%.8f    " % o2[i*9][3], '        ' , 'F     F     F'
+for i in range(len(h1)/9):
+        print >> output1, "%.8f    " % h1[i*9][1], "%.8f    " % h1[i*9][2] , "%.8f    " % h1[i*9][3], '        ' , tail
+        print >> output3, "%.8f    " % h1[i*9][1], "%.8f    " % h1[i*9][2] , "%.8f    " % h1[i*9][3], '        ' , tail
 
-        elif ( i+1  <= NPt+NC+NOS or  i+1  > N-(N-NPt-NC-NO-NHW)):
-            print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-            print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+for i in range(len(h2)/9):
+    if h2[i*9][4] in fh:
+        print >> output1, "%.8f    " % h2[i*9][1], "%.8f    " % h2[i*9][2] , "%.8f    " % h2[i*9][3], '        ' , tail
+        print >> output2, "%.8f    " % h2[i*9][1], "%.8f    " % h2[i*9][2] , "%.8f    " % h2[i*9][3], '        ' , tail
+        print >> output3, "%.8f    " % h2[i*9][1], "%.8f    " % h2[i*9][2] , "%.8f    " % h2[i*9][3], '        ' , tail
+        print >> output4, "%.8f    " % h2[i*9][1], "%.8f    " % h2[i*9][2] , "%.8f    " % h2[i*9][3], '        ' , tail
+    else:
+        print >> output1, "%.8f    " % h2[i*9][1], "%.8f    " % h2[i*9][2] , "%.8f    " % h2[i*9][3], '        ' , 'F     F     F'
+        print >> output2, "%.8f    " % h2[i*9][1], "%.8f    " % h2[i*9][2] , "%.8f    " % h2[i*9][3], '        ' , 'F     F     F'
 
-        else:
-            if (grab[0] in temp):
-                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-                print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-                print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+print fh
 
-            else:
-                print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
-                print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+### legacay output
+# for i in range(len(coords)):
+#     grab = [coords[i][0],coords[i][2],coords[i][3],coords[i][4]]
+#     tailF = 'F     F     F\n'
+#     tailT = 'T     T     T\n'
+#     if fixedposcar == 0:
+#         if i+1 <= NPt:
+#             print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#             print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#             print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#             print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#         elif ( i+1  <= NPt+NC+NOS or  i+1  > N-(N-NPt-NC-NO-NHW)):
+#             print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
+#             print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
+#         else:
+#             if (grab[0] in temp):
+#                 print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
+#                 print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
+#                 print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
+#                 print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailT,
+#             else:
+#                 print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#                 print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+
+#     elif fixedposcar == 1:
+#         if  i+1  <= NPt:
+#             print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#             print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#             print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#             print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+
+#         elif ( i+1  <= NPt+NC+NOS or  i+1  > N-(N-NPt-NC-NO-NHW)):
+#             print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#             print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+
+#         else:
+#             if (grab[0] in temp):
+#                 print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#                 print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#                 print >> output3, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#                 print >> output4, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+
+#             else:
+#                 print >> output1, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
+#                 print >> output2, "%.8f    " % grab[1], "%.8f    " % grab[2] , "%.8f    " % grab[3], '        ' , tailF,
 
 output1.close
 output2.close
 output3.close
 output4.close
+end = timeit.timeit()
+print end - start
