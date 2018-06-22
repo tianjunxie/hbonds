@@ -236,7 +236,7 @@ for i in range(len(lads)):
         do1h2 = dist( lads[i][:4], h2_t )
         do2h1 = dist( lwat[j][:4], h1_t )
         if do1o2 <= float(12.25) and (lads[i][0],lwat[j][0]) not in link and do1h2 <= 6.25:
-            A1 = ang( do1o2 , do1h2, do2h2)# angle of o2h2
+            A1 = ang( do1o2 , do2h2, do1h2)# angle of o1h2
             A2 = ang( do2h2 , do1h2, do1o2)# angle of o1o2    
             if A1 <= 30 and A2 >= 120:
                 link.append((lads[i][0],lwat[j][0])) 
@@ -258,7 +258,7 @@ for i in range(len(lads)):
 #               do2h2 = dist(o2[j],h2[l])
 #               if do2h2<=1.3 and (o1[i][4],o2[j][4]) not in link:
 #                    do1h2 = dist(o1[i] , h2[l])
-#                    A1 = ang( do1o2 , do1h2, do2h2) # angle of o2h2
+#                    A1 = ang( do1o2 , do2h2, do1h2)# angle of o1h2
 #                    A2 = ang( do2h2 , do1h2, do1o2) # angle of o1o2
 #                    # if A2>=120:  
 #                    if A1<=30 and A2>=120 and do1h2<=6.25:                     
@@ -420,3 +420,7 @@ output3.close
 output4.close
 end = timeit.timeit()
 print end - start
+#references
+# https://ac.els-cdn.com/S0167732201003427/1-s2.0-S0167732201003427-main.pdf?_tid=e84e133b-8606-465d-96be-2d0432d25fc9&acdnat=1529636744_214c9e5968b46c24bb2139c81277ab9f
+# https://aip.scitation.org/doi/pdf/10.1063/1.458652
+# https://aip.scitation.org/doi/pdf/10.1063/1.464521
